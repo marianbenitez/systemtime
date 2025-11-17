@@ -1,520 +1,520 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Este archivo proporciona orientación a Claude Code (claude.ai/code) al trabajar con código en este repositorio.
 
-## Project Overview
+## Descripción General del Proyecto
 
-Sistema de Control de Asistencia - A comprehensive attendance tracking system built with Next.js, featuring role-based authentication and Excel import capabilities.
+Sistema de Control de Asistencia - Un sistema integral de seguimiento de asistencia construido con Next.js, que incluye autenticación basada en roles y capacidades de importación de Excel.
 
-## Tech Stack
+## Stack Tecnológico
 
 - **Framework**: Next.js 16.0.3 (App Router)
 - **Runtime**: React 19.2.0
-- **Language**: TypeScript
-- **Database**: MySQL 8.0+ with Prisma ORM v6.19.0
-- **Authentication**: NextAuth.js v5.0.0-beta.30
-- **UI Library**: shadcn/ui with Radix UI primitives
-- **Styling**: Tailwind CSS v4
-- **Form Handling**: react-hook-form v7.66.0
-- **Validation**: Zod v4.1.12
-- **Password Hashing**: bcryptjs v3.0.3
-- **File Processing**: xlsx v0.18.5 for Excel imports
-- **Icons**: lucide-react v0.554.0
+- **Lenguaje**: TypeScript
+- **Base de Datos**: MySQL 8.0+ con Prisma ORM v6.19.0
+- **Autenticación**: NextAuth.js v5.0.0-beta.30
+- **Librería UI**: shadcn/ui con primitivos de Radix UI
+- **Estilos**: Tailwind CSS v4
+- **Manejo de Formularios**: react-hook-form v7.66.0
+- **Validación**: Zod v4.1.12
+- **Hashing de Contraseñas**: bcryptjs v3.0.3
+- **Procesamiento de Archivos**: xlsx v0.18.5 para importaciones de Excel
+- **Iconos**: lucide-react v0.554.0
 
-## Development Commands
+## Comandos de Desarrollo
 
 ```bash
-# Install dependencies
+# Instalar dependencias
 npm install
 
-# Generate Prisma client
+# Generar cliente de Prisma
 npx prisma generate
 
-# Run database migrations
+# Ejecutar migraciones de base de datos
 npx prisma migrate dev
 
-# Start development server
+# Iniciar servidor de desarrollo
 npm run dev
 
-# Build for production
+# Compilar para producción
 npm run build
 
-# Start production server
+# Iniciar servidor de producción
 npm start
 ```
 
-## Database Setup
+## Configuración de Base de Datos
 
-1. Ensure MySQL 8.0+ is running locally
-2. Create a `.env` file in the project root with:
+1. Asegurarse de que MySQL 8.0+ esté ejecutándose localmente
+2. Crear un archivo `.env` en la raíz del proyecto con:
    ```env
    DATABASE_URL="mysql://user:password@localhost:3306/attendance_db"
    NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
    NEXTAUTH_URL="http://localhost:3000"
    NODE_ENV="development"
    ```
-   **Note**: `.env.example` is referenced in docs but currently missing from repository. Above shows required variables.
+   **Nota**: `.env.example` se referencia en la documentación pero actualmente falta en el repositorio. Arriba se muestran las variables requeridas.
 
-3. Generate Prisma client and run migrations:
+3. Generar cliente de Prisma y ejecutar migraciones:
    ```bash
    npx prisma generate
    npx prisma migrate dev
    ```
 
-4. Create initial users:
-   - Visit `/auth/register` to create your first user
-   - Update user role in database directly: `UPDATE users SET role = 'SUPERADMIN' WHERE email = 'your@email.com'`
-   - Or use Prisma Studio: `npx prisma studio`
+4. Crear usuarios iniciales:
+   - Visitar `/auth/register` para crear tu primer usuario
+   - Actualizar el rol del usuario directamente en la base de datos: `UPDATE users SET role = 'SUPERADMIN' WHERE email = 'tu@email.com'`
+   - O usar Prisma Studio: `npx prisma studio`
 
-## Architecture
+## Arquitectura
 
-### Database Schema (Prisma)
+### Esquema de Base de Datos (Prisma)
 
-**Primary Models:**
+**Modelos Principales:**
 
-1. **User** (`users` table)
-   - `id`: String (cuid, primary key)
-   - `email`: String (unique, indexed)
+1. **User** (tabla `users`)
+   - `id`: String (cuid, clave primaria)
+   - `email`: String (único, indexado)
    - `name`: String
-   - `password`: String (bcryptjs hashed, 12 rounds)
-   - `role`: Enum (SUPERADMIN | ADMIN | USER) - default: USER
+   - `password`: String (hash bcryptjs, 12 rondas)
+   - `role`: Enum (SUPERADMIN | ADMIN | USER) - por defecto: USER
    - `createdAt`, `updatedAt`: DateTime
-   - Relations: `attendances[]` (one-to-many)
+   - Relaciones: `attendances[]` (uno a muchos)
 
-2. **Attendance** (`attendances` table)
-   - `id`: String (cuid, primary key)
-   - `userId`: String (foreign key, cascade delete)
-   - `user`: User relation
-   - `date`: DateTime (indexed for query performance)
+2. **Attendance** (tabla `attendances`)
+   - `id`: String (cuid, clave primaria)
+   - `userId`: String (clave foránea, eliminación en cascada)
+   - `user`: Relación con User
+   - `date`: DateTime (indexado para rendimiento de consultas)
    - `status`: Enum (PRESENT | ABSENT | LATE | JUSTIFIED)
-   - `checkIn`: DateTime (optional)
-   - `checkOut`: DateTime (optional)
-   - `notes`: Text (optional)
+   - `checkIn`: DateTime (opcional)
+   - `checkOut`: DateTime (opcional)
+   - `notes`: Text (opcional)
    - `createdAt`, `updatedAt`: DateTime
-   - Unique constraint: None (allows multiple entries per user/date if needed)
+   - Restricción única: Ninguna (permite múltiples entradas por usuario/fecha si es necesario)
 
-**NextAuth Tables:**
-- `Account`: OAuth account linkage (provider, tokens, etc.)
-- `Session`: User sessions (sessionToken, expires)
-- `VerificationToken`: Email verification tokens
+**Tablas de NextAuth:**
+- `Account`: Vinculación de cuentas OAuth (proveedor, tokens, etc.)
+- `Session`: Sesiones de usuario (sessionToken, expires)
+- `VerificationToken`: Tokens de verificación de email
 
-**Roles & Permissions:**
-- **SUPERADMIN**: Full system access, user management, all attendance records
-- **ADMIN**: Manage all attendance records, cannot manage users
-- **USER**: View and manage only their own attendance
+**Roles y Permisos:**
+- **SUPERADMIN**: Acceso completo al sistema, gestión de usuarios, todos los registros de asistencia
+- **ADMIN**: Gestionar todos los registros de asistencia, no puede gestionar usuarios
+- **USER**: Ver y gestionar solo su propia asistencia
 
-### Authentication Flow
+### Flujo de Autenticación
 
-**Configuration** (`src/lib/auth.ts`):
-- **Provider**: CredentialsProvider (email + password only, no OAuth currently)
-- **Adapter**: PrismaAdapter for database integration
-- **Session Strategy**: JWT (server-side validation)
-- **Password Hashing**: bcryptjs with 12 salt rounds
-- **Session Extension**:
-  - JWT callback adds `id` and `role` to token
-  - Session callback exposes `id` and `role` in `session.user`
-- **Redirect URLs**: Sign-in page at `/auth/login`
+**Configuración** (`src/lib/auth.ts`):
+- **Proveedor**: CredentialsProvider (solo email + contraseña, sin OAuth actualmente)
+- **Adaptador**: PrismaAdapter para integración con base de datos
+- **Estrategia de Sesión**: JWT (validación del lado del servidor)
+- **Hashing de Contraseña**: bcryptjs con 12 rondas de salt
+- **Extensión de Sesión**:
+  - Callback JWT agrega `id` y `role` al token
+  - Callback de sesión expone `id` y `role` en `session.user`
+- **URLs de Redirección**: Página de inicio de sesión en `/auth/login`
 
-**Route Protection** (`src/middleware.ts`):
-- Uses NextAuth `withAuth` middleware
-- Protected patterns: `/dashboard/:path*`, `/admin/:path*`, `/attendance/:path*`
-- Validates JWT token and role for each request
-- Redirects unauthorized users to `/dashboard` or login page
+**Protección de Rutas** (`src/middleware.ts`):
+- Usa middleware `withAuth` de NextAuth
+- Patrones protegidos: `/dashboard/:path*`, `/admin/:path*`, `/attendance/:path*`
+- Valida token JWT y rol para cada solicitud
+- Redirige usuarios no autorizados a `/dashboard` o página de login
 
-**Client-Side Access** (`src/lib/hooks/use-current-user.ts`):
-- Custom hook `useCurrentUser()` wraps NextAuth's `useSession()`
-- Returns: `{ user, isLoading, isAuthenticated }`
-- Available to all client components wrapped in `SessionProvider`
+**Acceso del Lado del Cliente** (`src/lib/hooks/use-current-user.ts`):
+- Hook personalizado `useCurrentUser()` envuelve `useSession()` de NextAuth
+- Retorna: `{ user, isLoading, isAuthenticated }`
+- Disponible para todos los componentes cliente envueltos en `SessionProvider`
 
-### Route Structure
+### Estructura de Rutas
 
-**Public Routes:**
-- `/` - Root page (currently unused Next.js template, should redirect to dashboard)
-- `/auth/login` - Login page with email/password form
-- `/auth/register` - Registration page (creates USER role by default)
+**Rutas Públicas:**
+- `/` - Página raíz (actualmente plantilla de Next.js sin usar, debería redirigir al dashboard)
+- `/auth/login` - Página de login con formulario de email/contraseña
+- `/auth/register` - Página de registro (crea rol USER por defecto)
 
-**Protected Routes** (all require authentication):
-- `/dashboard` - Main dashboard overview (shows user info cards)
-- `/dashboard/my-attendance` - User's own attendance records (all roles)
-- `/dashboard/attendance` - Attendance management with Excel import (ADMIN/SUPERADMIN only)
-- `/dashboard/users` - User management (**NOT YET IMPLEMENTED**, SUPERADMIN only)
+**Rutas Protegidas** (todas requieren autenticación):
+- `/dashboard` - Vista general del dashboard principal (muestra tarjetas de información del usuario)
+- `/dashboard/my-attendance` - Registros de asistencia propios del usuario (todos los roles)
+- `/dashboard/attendance` - Gestión de asistencia con importación de Excel (solo ADMIN/SUPERADMIN)
+- `/dashboard/users` - Gestión de usuarios (**AÚN NO IMPLEMENTADO**, solo SUPERADMIN)
 
-**Dashboard Layout** (`/dashboard/layout.tsx`):
-- Includes Navbar (top) and Sidebar (left) components
-- Sidebar items filtered by role permissions
-- Full-height responsive layout
+**Layout del Dashboard** (`/dashboard/layout.tsx`):
+- Incluye componentes Navbar (superior) y Sidebar (izquierdo)
+- Items del Sidebar filtrados por permisos de rol
+- Layout responsivo de altura completa
 
-### API Routes
+### Rutas de API
 
-**Authentication:**
-- `POST /api/auth/[...nextauth]` - NextAuth handlers (login, logout, session)
-- `POST /api/register` - User registration
+**Autenticación:**
+- `POST /api/auth/[...nextauth]` - Manejadores de NextAuth (login, logout, session)
+- `POST /api/register` - Registro de usuario
   - Body: `{ email, name, password }`
-  - Validates: email uniqueness, password min 6 chars
-  - Returns: Created user (password excluded) with 201 status
-  - Errors: 400 (validation), 500 (server error)
+  - Valida: unicidad de email, contraseña mínimo 6 caracteres
+  - Retorna: Usuario creado (contraseña excluida) con estado 201
+  - Errores: 400 (validación), 500 (error del servidor)
 
-**Attendance Management:**
-- `GET /api/attendance` - Fetch attendance records
-  - Query params: `userId` (optional), `startDate` (optional), `endDate` (optional)
-  - **Role filtering**:
-    - ADMIN/SUPERADMIN: Can fetch all records or filter by userId
-    - USER: Only gets their own records (userId forced)
-  - Returns: Array of attendance objects with user information
-  - Sorted by date descending
+**Gestión de Asistencia:**
+- `GET /api/attendance` - Obtener registros de asistencia
+  - Parámetros de consulta: `userId` (opcional), `startDate` (opcional), `endDate` (opcional)
+  - **Filtrado por rol**:
+    - ADMIN/SUPERADMIN: Pueden obtener todos los registros o filtrar por userId
+    - USER: Solo obtienen sus propios registros (userId forzado)
+  - Retorna: Array de objetos de asistencia con información de usuario
+  - Ordenado por fecha descendente
 
-- `POST /api/attendance` - Create attendance record
+- `POST /api/attendance` - Crear registro de asistencia
   - Body: `{ date, status, userId?, checkIn?, checkOut?, notes? }`
-  - Required: `date`, `status` (PRESENT|ABSENT|LATE|JUSTIFIED)
-  - Optional: `userId` (defaults to session.user.id), `checkIn`, `checkOut`, `notes`
-  - Returns: Created attendance with user info
-  - Errors: 401 (not authenticated), 400 (validation)
+  - Requerido: `date`, `status` (PRESENT|ABSENT|LATE|JUSTIFIED)
+  - Opcional: `userId` (por defecto session.user.id), `checkIn`, `checkOut`, `notes`
+  - Retorna: Asistencia creada con información de usuario
+  - Errores: 401 (no autenticado), 400 (validación)
 
-- `POST /api/attendance/import` - Bulk import from Excel/CSV
-  - **Authorization**: ADMIN or SUPERADMIN only (returns 403 otherwise)
+- `POST /api/attendance/import` - Importación masiva desde Excel/CSV
+  - **Autorización**: Solo ADMIN o SUPERADMIN (retorna 403 en caso contrario)
   - Content-Type: `multipart/form-data`
-  - File types: `.xlsx`, `.xls`, `.csv`
-  - Returns: `{ success: number, errors: number, errorDetails: string[] }`
-  - See "Excel Import Format" section for column structure
+  - Tipos de archivo: `.xlsx`, `.xls`, `.csv`
+  - Retorna: `{ success: number, errors: number, errorDetails: string[] }`
+  - Ver sección "Formato de Importación de Excel" para estructura de columnas
 
-### Project Structure
+### Estructura del Proyecto
 
 ```
 /home/user/systemtime/
 ├── prisma/
-│   ├── schema.prisma              # Database schema
-│   └── migrations/                # Database migration history
+│   ├── schema.prisma              # Esquema de base de datos
+│   └── migrations/                # Historial de migraciones de base de datos
 ├── src/
 │   ├── app/                       # Next.js App Router
-│   │   ├── api/                   # API routes
+│   │   ├── api/                   # Rutas de API
 │   │   │   ├── auth/[...nextauth]/route.ts
 │   │   │   ├── register/route.ts
 │   │   │   └── attendance/
-│   │   │       ├── route.ts       # GET/POST attendance
+│   │   │       ├── route.ts       # GET/POST asistencia
 │   │   │       └── import/route.ts
-│   │   ├── auth/                  # Auth pages
+│   │   ├── auth/                  # Páginas de autenticación
 │   │   │   ├── login/page.tsx
 │   │   │   └── register/page.tsx
-│   │   ├── dashboard/             # Protected dashboard
-│   │   │   ├── page.tsx           # Dashboard overview
-│   │   │   ├── layout.tsx         # Dashboard layout
+│   │   ├── dashboard/             # Dashboard protegido
+│   │   │   ├── page.tsx           # Vista general del dashboard
+│   │   │   ├── layout.tsx         # Layout del dashboard
 │   │   │   ├── my-attendance/page.tsx
 │   │   │   └── attendance/page.tsx
-│   │   ├── layout.tsx             # Root layout
-│   │   ├── page.tsx               # Root page (unused template)
-│   │   └── globals.css            # Tailwind CSS + theme variables
+│   │   ├── layout.tsx             # Layout raíz
+│   │   ├── page.tsx               # Página raíz (plantilla sin usar)
+│   │   └── globals.css            # Tailwind CSS + variables de tema
 │   ├── components/
-│   │   ├── ui/                    # shadcn/ui components (11 files)
+│   │   ├── ui/                    # Componentes shadcn/ui (11 archivos)
 │   │   │   ├── avatar.tsx, badge.tsx, button.tsx
 │   │   │   ├── card.tsx, dialog.tsx, dropdown-menu.tsx
 │   │   │   ├── form.tsx, input.tsx, label.tsx
 │   │   │   └── select.tsx, table.tsx
 │   │   ├── dashboard/
-│   │   │   ├── navbar.tsx         # Top navigation with user menu
-│   │   │   ├── sidebar.tsx        # Left sidebar with role-based items
-│   │   │   └── import-excel.tsx   # Excel import dialog
+│   │   │   ├── navbar.tsx         # Navegación superior con menú de usuario
+│   │   │   ├── sidebar.tsx        # Barra lateral izquierda con items basados en roles
+│   │   │   └── import-excel.tsx   # Diálogo de importación de Excel
 │   │   └── providers/
-│   │       └── session-provider.tsx  # NextAuth SessionProvider wrapper
+│   │       └── session-provider.tsx  # Wrapper de SessionProvider de NextAuth
 │   ├── lib/
-│   │   ├── auth.ts                # NextAuth configuration
-│   │   ├── prisma.ts              # Prisma client singleton
-│   │   ├── role-helpers.ts        # Role permission utilities
-│   │   ├── utils.ts               # cn() class name merger
+│   │   ├── auth.ts                # Configuración de NextAuth
+│   │   ├── prisma.ts              # Singleton del cliente de Prisma
+│   │   ├── role-helpers.ts        # Utilidades de permisos de rol
+│   │   ├── utils.ts               # Fusionador de nombres de clase cn()
 │   │   └── hooks/
-│   │       └── use-current-user.ts  # useCurrentUser() hook
-│   └── middleware.ts              # NextAuth route protection
-├── public/                        # Static assets
-├── .env                           # Environment variables (not in repo)
+│   │       └── use-current-user.ts  # Hook useCurrentUser()
+│   └── middleware.ts              # Protección de rutas de NextAuth
+├── public/                        # Recursos estáticos
+├── .env                           # Variables de entorno (no en repo)
 ├── .gitignore
-├── package.json                   # Dependencies and scripts
-├── tsconfig.json                  # TypeScript configuration
-├── next.config.ts                 # Next.js configuration
-├── prisma.config.ts               # Prisma configuration
-├── components.json                # shadcn/ui configuration
-├── tailwind.config.ts             # Tailwind CSS configuration
-├── postcss.config.mjs             # PostCSS configuration
-├── eslint.config.mjs              # ESLint configuration
-├── CLAUDE.md                      # This file
-└── README.md                      # Project README
+├── package.json                   # Dependencias y scripts
+├── tsconfig.json                  # Configuración de TypeScript
+├── next.config.ts                 # Configuración de Next.js
+├── prisma.config.ts               # Configuración de Prisma
+├── components.json                # Configuración de shadcn/ui
+├── tailwind.config.ts             # Configuración de Tailwind CSS
+├── postcss.config.mjs             # Configuración de PostCSS
+├── eslint.config.mjs              # Configuración de ESLint
+├── CLAUDE.md                      # Este archivo
+└── README.md                      # README del proyecto
 ```
 
-### Excel Import Format
+### Formato de Importación de Excel
 
-The attendance import feature (`/dashboard/attendance` page, ADMIN+ only) expects CSV/Excel files with these columns:
+La función de importación de asistencia (página `/dashboard/attendance`, solo ADMIN+) espera archivos CSV/Excel con estas columnas:
 
-**Required Columns:**
-- `email`: User email to match against database (must exist in users table)
-- `fecha`: Attendance date (any standard date format)
-- `estado`: Status - must be one of: PRESENT, ABSENT, LATE, JUSTIFIED
+**Columnas Requeridas:**
+- `email`: Email del usuario para coincidir con la base de datos (debe existir en la tabla users)
+- `fecha`: Fecha de asistencia (cualquier formato de fecha estándar)
+- `estado`: Estado - debe ser uno de: PRESENT, ABSENT, LATE, JUSTIFIED
 
-**Optional Columns:**
-- `entrada`: Check-in datetime
-- `salida`: Check-out datetime
-- `notas`: Notes/comments (text)
+**Columnas Opcionales:**
+- `entrada`: Fecha y hora de entrada
+- `salida`: Fecha y hora de salida
+- `notas`: Notas/comentarios (texto)
 
-**Import Process:**
-1. Click "Importar Excel" button on attendance page
-2. Download template CSV for reference (includes sample data)
-3. Upload filled Excel/CSV file
-4. System validates each row and provides detailed error feedback
-5. Successfully imported records appear in attendance table
+**Proceso de Importación:**
+1. Hacer clic en el botón "Importar Excel" en la página de asistencia
+2. Descargar plantilla CSV como referencia (incluye datos de ejemplo)
+3. Subir archivo Excel/CSV completado
+4. El sistema valida cada fila y proporciona retroalimentación detallada de errores
+5. Los registros importados exitosamente aparecen en la tabla de asistencia
 
-**Error Handling:**
-- Invalid email: Skips row, reports "Usuario no encontrado"
-- Invalid status: Skips row, reports allowed values
-- Missing required fields: Skips row with error message
-- Import summary shows: success count, error count, detailed error list
+**Manejo de Errores:**
+- Email inválido: Omite la fila, reporta "Usuario no encontrado"
+- Estado inválido: Omite la fila, reporta valores permitidos
+- Campos requeridos faltantes: Omite la fila con mensaje de error
+- El resumen de importación muestra: conteo de éxitos, conteo de errores, lista detallada de errores
 
-### Dashboard Components
+### Componentes del Dashboard
 
 **Navbar** (`src/components/dashboard/navbar.tsx`):
-- Fixed top navigation bar with "Sistema de Asistencia" title
-- User dropdown menu showing name, email, role badge
-- Role badge colors: SUPERADMIN (purple), ADMIN (blue), USER (gray)
-- Logout button triggers NextAuth signOut
-- Client component using useCurrentUser hook
+- Barra de navegación superior fija con título "Sistema de Asistencia"
+- Menú desplegable de usuario mostrando nombre, email, insignia de rol
+- Colores de insignia de rol: SUPERADMIN (morado), ADMIN (azul), USER (gris)
+- Botón de cerrar sesión activa signOut de NextAuth
+- Componente cliente usando hook useCurrentUser
 
 **Sidebar** (`src/components/dashboard/sidebar.tsx`):
-- Left navigation panel with role-based menu items
-- Navigation items:
-  - Dashboard (all roles)
-  - Mi Asistencia (all roles)
-  - Gestionar Asistencia (ADMIN/SUPERADMIN) - uses `canManageAttendance()`
-  - Usuarios (SUPERADMIN only) - uses `canManageUsers()`
-- Active route highlighting with different background color
-- Client component using usePathname for active detection
+- Panel de navegación izquierdo con items de menú basados en roles
+- Items de navegación:
+  - Dashboard (todos los roles)
+  - Mi Asistencia (todos los roles)
+  - Gestionar Asistencia (ADMIN/SUPERADMIN) - usa `canManageAttendance()`
+  - Usuarios (solo SUPERADMIN) - usa `canManageUsers()`
+- Resaltado de ruta activa con color de fondo diferente
+- Componente cliente usando usePathname para detección de activo
 
 **ImportExcel** (`src/components/dashboard/import-excel.tsx`):
-- Dialog modal for Excel file upload
-- Features: file input, template download, upload progress
-- Success/error feedback with detailed error list
-- Calls `/api/attendance/import` with FormData
-- Triggers callback on success to refresh attendance table
+- Modal de diálogo para carga de archivo Excel
+- Características: entrada de archivo, descarga de plantilla, progreso de carga
+- Retroalimentación de éxito/error con lista detallada de errores
+- Llama a `/api/attendance/import` con FormData
+- Dispara callback en éxito para refrescar tabla de asistencia
 
-### Custom Hooks
+### Hooks Personalizados
 
 **useCurrentUser** (`src/lib/hooks/use-current-user.ts`):
 ```typescript
 const { user, isLoading, isAuthenticated } = useCurrentUser()
 ```
-- Wraps NextAuth's `useSession()` hook
-- Returns user object with `id`, `email`, `name`, `role`
-- `isLoading`: true while session is being fetched
-- `isAuthenticated`: true if user is logged in
-- Use in client components only
+- Envuelve el hook `useSession()` de NextAuth
+- Retorna objeto de usuario con `id`, `email`, `name`, `role`
+- `isLoading`: true mientras se obtiene la sesión
+- `isAuthenticated`: true si el usuario está logueado
+- Usar solo en componentes cliente
 
-## Important Conventions
+## Convenciones Importantes
 
-**Language & Localization:**
-- All user-facing text is in Spanish
-- Dates formatted with `es-ES` locale: `toLocaleDateString('es-ES')`
-- Times formatted with `es-ES` locale: `toLocaleTimeString('es-ES')`
-- Database fields use Spanish: `fecha`, `estado`, `entrada`, `salida`, `notas`
+**Idioma y Localización:**
+- Todo el texto de cara al usuario está en español
+- Fechas formateadas con locale `es-ES`: `toLocaleDateString('es-ES')`
+- Horas formateadas con locale `es-ES`: `toLocaleTimeString('es-ES')`
+- Los campos de base de datos usan español: `fecha`, `estado`, `entrada`, `salida`, `notas`
 
-**Code Organization:**
-- Client components must use `"use client"` directive at top of file
-- Server components (default) can access database directly
-- API routes always validate session and role permissions before processing
-- Use role helper functions instead of direct role string comparison
-- All components use TypeScript with strict mode
+**Organización del Código:**
+- Los componentes cliente deben usar la directiva `"use client"` al inicio del archivo
+- Los componentes servidor (por defecto) pueden acceder a la base de datos directamente
+- Las rutas de API siempre validan sesión y permisos de rol antes de procesar
+- Usar funciones helper de rol en lugar de comparación directa de strings de rol
+- Todos los componentes usan TypeScript con modo estricto
 
-**Security:**
-- Passwords hashed with bcryptjs (12 rounds) before storage
-- Minimum password length: 6 characters (consider increasing to 8+)
-- JWT tokens validated on every protected route via middleware
-- CSRF protection enabled by default in NextAuth
-- No sensitive data in client-side session (only id, email, name, role)
+**Seguridad:**
+- Contraseñas hasheadas con bcryptjs (12 rondas) antes del almacenamiento
+- Longitud mínima de contraseña: 6 caracteres (considerar aumentar a 8+)
+- Tokens JWT validados en cada ruta protegida vía middleware
+- Protección CSRF habilitada por defecto en NextAuth
+- Sin datos sensibles en sesión del lado del cliente (solo id, email, name, role)
 
-**Database:**
-- All IDs use `cuid()` for unique, distributed-safe identifiers
-- Timestamps auto-managed: `createdAt`, `updatedAt`
-- Foreign key constraints with cascade delete (User → Attendance)
-- Indexed fields: `email`, `date`, `userId` for query performance
+**Base de Datos:**
+- Todos los IDs usan `cuid()` para identificadores únicos y seguros distribuidos
+- Timestamps auto-gestionados: `createdAt`, `updatedAt`
+- Restricciones de clave foránea con eliminación en cascada (User → Attendance)
+- Campos indexados: `email`, `date`, `userId` para rendimiento de consultas
 
-**Styling:**
-- Tailwind CSS v4 with CSS variables for theming
-- Dark mode support via `.dark` class (toggle not implemented)
-- shadcn/ui components styled with "new-york" variant
-- Color system uses oklch() for better perceptual uniformity
-- Use `cn()` utility to merge Tailwind classes conditionally
+**Estilos:**
+- Tailwind CSS v4 con variables CSS para temas
+- Soporte de modo oscuro vía clase `.dark` (toggle no implementado)
+- Componentes shadcn/ui estilizados con variante "new-york"
+- Sistema de color usa oklch() para mejor uniformidad perceptual
+- Usar utilidad `cn()` para fusionar clases de Tailwind condicionalmente
 
-**Status Badge Colors:**
-- PRESENT: green (`bg-green-100 text-green-800`)
-- ABSENT: red (`bg-red-100 text-red-800`)
-- LATE: yellow (`bg-yellow-100 text-yellow-800`)
-- JUSTIFIED: blue (`bg-blue-100 text-blue-800`)
+**Colores de Insignias de Estado:**
+- PRESENT: verde (`bg-green-100 text-green-800`)
+- ABSENT: rojo (`bg-red-100 text-red-800`)
+- LATE: amarillo (`bg-yellow-100 text-yellow-800`)
+- JUSTIFIED: azul (`bg-blue-100 text-blue-800`)
 
-## Role Helper Functions
+## Funciones Helper de Roles
 
-Located in `src/lib/role-helpers.ts` - **Always use these instead of direct role checks:**
+Ubicadas en `src/lib/role-helpers.ts` - **Siempre usar estas en lugar de verificaciones directas de rol:**
 
 ```typescript
-hasRole(role, allowedRoles)      // Generic role checker
-isSuperAdmin(role)               // Returns true if SUPERADMIN
-isAdmin(role)                    // Returns true if ADMIN or SUPERADMIN
-isUser(role)                     // Returns true if USER
-canManageUsers(role)             // Returns true if SUPERADMIN only
-canManageAttendance(role)        // Returns true if ADMIN or SUPERADMIN
-canViewAllAttendance(role)       // Returns true if ADMIN or SUPERADMIN
+hasRole(role, allowedRoles)      // Verificador genérico de rol
+isSuperAdmin(role)               // Retorna true si SUPERADMIN
+isAdmin(role)                    // Retorna true si ADMIN o SUPERADMIN
+isUser(role)                     // Retorna true si USER
+canManageUsers(role)             // Retorna true solo si SUPERADMIN
+canManageAttendance(role)        // Retorna true si ADMIN o SUPERADMIN
+canViewAllAttendance(role)       // Retorna true si ADMIN o SUPERADMIN
 ```
 
-**Example Usage:**
+**Ejemplo de Uso:**
 ```typescript
 import { canManageAttendance } from '@/lib/role-helpers'
 
 if (canManageAttendance(session.user.role)) {
-  // Show admin features
+  // Mostrar características de admin
 }
 ```
 
-## Known Gaps & Future Improvements
+## Brechas Conocidas y Mejoras Futuras
 
-**Missing Implementations:**
-1. **User Management Page** (`/dashboard/users`):
-   - Sidebar link exists but page not implemented
-   - Should allow SUPERADMIN to: create, edit, delete users, change roles
-   - Required API routes: GET/POST/PUT/DELETE `/api/users`
+**Implementaciones Faltantes:**
+1. **Página de Gestión de Usuarios** (`/dashboard/users`):
+   - El enlace en el sidebar existe pero la página no está implementada
+   - Debería permitir a SUPERADMIN: crear, editar, eliminar usuarios, cambiar roles
+   - Rutas de API requeridas: GET/POST/PUT/DELETE `/api/users`
 
-2. **Manual Attendance Registration**:
-   - "Registrar Asistencia" button exists but no functionality
-   - Should open dialog to create attendance record manually
-   - Form fields: user (dropdown), date, status, times, notes
+2. **Registro Manual de Asistencia**:
+   - El botón "Registrar Asistencia" existe pero sin funcionalidad
+   - Debería abrir un diálogo para crear registro de asistencia manualmente
+   - Campos del formulario: usuario (dropdown), fecha, estado, horarios, notas
 
-3. **Root Page Redirect**:
-   - `/` still shows default Next.js template
-   - Should redirect authenticated users to `/dashboard`
-   - Should show landing page or redirect to `/auth/login` for guests
+3. **Redirección de Página Raíz**:
+   - `/` todavía muestra la plantilla por defecto de Next.js
+   - Debería redirigir usuarios autenticados a `/dashboard`
+   - Debería mostrar página de inicio o redirigir a `/auth/login` para invitados
 
-4. **Edit/Delete Attendance**:
-   - No UI to edit or delete existing attendance records
-   - Consider adding actions column to attendance tables
+4. **Editar/Eliminar Asistencia**:
+   - Sin UI para editar o eliminar registros de asistencia existentes
+   - Considerar agregar columna de acciones a las tablas de asistencia
 
-**Missing Files:**
-- `.env.example`: Should be created with template environment variables
+**Archivos Faltantes:**
+- `.env.example`: Debería crearse con variables de entorno de plantilla
 
-**Security Enhancements Needed:**
-- Password strength requirements (currently only 6 chars)
-- Email verification flow
-- Password reset functionality
-- Account lockout after failed login attempts
-- Rate limiting on API routes
-- Audit log for user/attendance changes
+**Mejoras de Seguridad Necesarias:**
+- Requisitos de fortaleza de contraseña (actualmente solo 6 caracteres)
+- Flujo de verificación de email
+- Funcionalidad de restablecimiento de contraseña
+- Bloqueo de cuenta después de intentos fallidos de login
+- Limitación de tasa en rutas de API
+- Registro de auditoría para cambios de usuario/asistencia
 
-**UX Improvements:**
-- Loading skeletons instead of "Cargando..." text
-- Error boundaries for better error handling
-- Toast notifications for success/error messages
-- Pagination for attendance tables (currently loads all)
-- Date range filters on attendance pages
-- Search functionality on attendance tables
-- Export attendance to Excel/PDF
+**Mejoras de UX:**
+- Esqueletos de carga en lugar de texto "Cargando..."
+- Límites de error para mejor manejo de errores
+- Notificaciones toast para mensajes de éxito/error
+- Paginación para tablas de asistencia (actualmente carga todas)
+- Filtros de rango de fechas en páginas de asistencia
+- Funcionalidad de búsqueda en tablas de asistencia
+- Exportar asistencia a Excel/PDF
 
-**Dark Mode:**
-- CSS variables exist in `globals.css`
-- Toggle UI not implemented
-- Add theme switcher to navbar
+**Modo Oscuro:**
+- Las variables CSS existen en `globals.css`
+- Toggle UI no implementado
+- Agregar conmutador de tema al navbar
 
-## Development Tips
+## Consejos de Desarrollo
 
-**Adding a New Page:**
-1. Create page file: `src/app/your-route/page.tsx`
-2. Add to sidebar if needed: `src/components/dashboard/sidebar.tsx`
-3. Update middleware if route needs protection: `src/middleware.ts`
-4. Add role checks if needed using helper functions
+**Agregar una Nueva Página:**
+1. Crear archivo de página: `src/app/tu-ruta/page.tsx`
+2. Agregar al sidebar si es necesario: `src/components/dashboard/sidebar.tsx`
+3. Actualizar middleware si la ruta necesita protección: `src/middleware.ts`
+4. Agregar verificaciones de rol si es necesario usando funciones helper
 
-**Adding a New API Route:**
-1. Create route file: `src/app/api/your-route/route.ts`
-2. Always validate session: `const session = await auth()`
-3. Check permissions using role helpers before processing
-4. Return proper HTTP status codes (200, 201, 400, 401, 403, 500)
-5. Use Prisma client from `@/lib/prisma`
+**Agregar una Nueva Ruta de API:**
+1. Crear archivo de ruta: `src/app/api/tu-ruta/route.ts`
+2. Siempre validar sesión: `const session = await auth()`
+3. Verificar permisos usando helpers de rol antes de procesar
+4. Retornar códigos de estado HTTP apropiados (200, 201, 400, 401, 403, 500)
+5. Usar cliente de Prisma desde `@/lib/prisma`
 
-**Adding a New shadcn/ui Component:**
+**Agregar un Nuevo Componente de shadcn/ui:**
 ```bash
-npx shadcn@latest add [component-name]
+npx shadcn@latest add [nombre-componente]
 ```
-Component will be added to `src/components/ui/`
+El componente se agregará a `src/components/ui/`
 
-**Database Changes:**
-1. Update `prisma/schema.prisma`
-2. Create migration: `npx prisma migrate dev --name description`
-3. Regenerate client: `npx prisma generate`
-4. Update TypeScript types if needed
+**Cambios en Base de Datos:**
+1. Actualizar `prisma/schema.prisma`
+2. Crear migración: `npx prisma migrate dev --name descripcion`
+3. Regenerar cliente: `npx prisma generate`
+4. Actualizar tipos de TypeScript si es necesario
 
-**Testing Changes:**
-1. Run dev server: `npm run dev`
-2. Test in browser at http://localhost:3000
-3. Check browser console for errors
-4. Test with different user roles (create test users with different roles)
-5. Build before deploying: `npm run build`
+**Probar Cambios:**
+1. Ejecutar servidor de desarrollo: `npm run dev`
+2. Probar en navegador en http://localhost:3000
+3. Verificar consola del navegador para errores
+4. Probar con diferentes roles de usuario (crear usuarios de prueba con diferentes roles)
+5. Compilar antes de desplegar: `npm run build`
 
-## Common Tasks
+## Tareas Comunes
 
-**Create a SUPERADMIN user:**
+**Crear un usuario SUPERADMIN:**
 ```bash
-# Option 1: Via Prisma Studio
+# Opción 1: Vía Prisma Studio
 npx prisma studio
-# Navigate to User model, find user, edit role to SUPERADMIN
+# Navegar al modelo User, encontrar usuario, editar rol a SUPERADMIN
 
-# Option 2: Direct SQL (if MySQL CLI available)
-mysql -u user -p database_name
-UPDATE users SET role = 'SUPERADMIN' WHERE email = 'your@email.com';
+# Opción 2: SQL Directo (si MySQL CLI está disponible)
+mysql -u user -p nombre_base_datos
+UPDATE users SET role = 'SUPERADMIN' WHERE email = 'tu@email.com';
 ```
 
-**Reset Database:**
+**Resetear Base de Datos:**
 ```bash
 npx prisma migrate reset
-# Warning: This deletes all data!
+# Advertencia: ¡Esto elimina todos los datos!
 ```
 
-**View Database:**
+**Ver Base de Datos:**
 ```bash
 npx prisma studio
-# Opens GUI at http://localhost:5555
+# Abre GUI en http://localhost:5555
 ```
 
-**Check TypeScript Errors:**
+**Verificar Errores de TypeScript:**
 ```bash
 npx tsc --noEmit
 ```
 
-**Format Code:**
+**Formatear Código:**
 ```bash
 npm run lint
 ```
 
-**Update Dependencies:**
+**Actualizar Dependencias:**
 ```bash
 npm update
-# Or for specific package:
-npm update package-name
+# O para paquete específico:
+npm update nombre-paquete
 ```
 
-## Troubleshooting
+## Solución de Problemas
 
-**"Prisma Client not generated" error:**
+**Error "Prisma Client not generated":**
 ```bash
 npx prisma generate
 ```
 
-**Database connection errors:**
-- Check MySQL is running
-- Verify DATABASE_URL in `.env`
-- Check MySQL user has proper permissions
-- Ensure database exists
+**Errores de conexión a base de datos:**
+- Verificar que MySQL esté ejecutándose
+- Verificar DATABASE_URL en `.env`
+- Verificar que el usuario de MySQL tenga permisos adecuados
+- Asegurarse de que la base de datos exista
 
-**NextAuth errors:**
-- Verify NEXTAUTH_SECRET is set in `.env`
-- Check NEXTAUTH_URL matches your app URL
-- Clear browser cookies if session issues persist
+**Errores de NextAuth:**
+- Verificar que NEXTAUTH_SECRET esté configurado en `.env`
+- Verificar que NEXTAUTH_URL coincida con la URL de tu aplicación
+- Limpiar cookies del navegador si persisten problemas de sesión
 
-**Build errors:**
-- Run `npx prisma generate` before build
-- Check for TypeScript errors: `npx tsc --noEmit`
-- Clear `.next` folder: `rm -rf .next && npm run build`
+**Errores de compilación:**
+- Ejecutar `npx prisma generate` antes de compilar
+- Verificar errores de TypeScript: `npx tsc --noEmit`
+- Limpiar carpeta `.next`: `rm -rf .next && npm run build`
 
-**Import not working:**
-- Check file has correct columns (email, fecha, estado)
-- Verify user emails exist in database
-- Check status values are exactly: PRESENT, ABSENT, LATE, or JUSTIFIED
-- Look at error details in import result dialog
+**Importación no funciona:**
+- Verificar que el archivo tenga las columnas correctas (email, fecha, estado)
+- Verificar que los emails de usuario existan en la base de datos
+- Verificar que los valores de estado sean exactamente: PRESENT, ABSENT, LATE, o JUSTIFIED
+- Mirar los detalles de error en el diálogo de resultado de importación
