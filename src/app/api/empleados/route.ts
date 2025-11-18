@@ -5,7 +5,10 @@ export async function GET() {
   try {
     const empleados = await prisma.empleado.findMany({
       where: { activo: true },
-      orderBy: { nombre: 'asc' }
+      orderBy: [
+        { apellido: 'asc' },
+        { nombre: 'asc' }
+      ]
     })
 
     return NextResponse.json(empleados)

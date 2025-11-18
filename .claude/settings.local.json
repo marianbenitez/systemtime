@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si\" npx prisma migrate reset:*)",
+      "Bash(npx tsx:*)",
+      "Bash(mysql:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/importar-dual.sh:*)",
+      "Bash(echo:*)",
+      "Bash(npx prisma db pull:*)"
     ],
     "deny": [],
     "ask": []

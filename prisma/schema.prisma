@@ -98,10 +98,11 @@ model VerificationToken {
 // Modelo: Empleado
 model Empleado {
   id              Int       @id @default(autoincrement())
-  numeroAC        String    @unique @db.VarChar(20) @map("numero_ac")
-  numeroEmpleado  String?   @db.VarChar(10) @map("numero_empleado")
-  nombre          String    @db.VarChar(255)
-  departamento    String?   @db.VarChar(100)
+  numeroAC        String    @unique @db.VarChar(20) @map("numero_ac") // DNI
+  numeroId        String?   @db.VarChar(10) @map("numero_id") // Legajo
+  nombre          String    @db.VarChar(150)
+  apellido        String    @db.VarChar(150)
+  departamento    String?   @db.VarChar(100) // Escuela
   activo          Boolean   @default(true)
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")

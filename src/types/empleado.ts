@@ -1,9 +1,10 @@
 export interface Empleado {
   id: number;
-  numeroAC: string;
-  numeroEmpleado?: string;
+  numeroAC: string; // DNI
+  numeroId?: string; // Rol/Legajo
   nombre: string;
-  departamento?: string;
+  apellido: string;
+  departamento?: string; // Escuela
   activo: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -20,6 +20,11 @@ export function formatearHorasDecimal(horas: number): string {
   return horas.toFixed(2)
 }
 
+export function formatearFechaParaNombreArchivo(fecha: Date | string): string {
+  const d = typeof fecha === 'string' ? new Date(fecha) : fecha
+  return format(d, 'dd-MM-yyyy')
+}
+
 export function parsearFechaExcel(fechaString: string): Date | null {
   try {
     // Formato esperado: "14/5/2025 08:04" o "14/05/2025 08:04"

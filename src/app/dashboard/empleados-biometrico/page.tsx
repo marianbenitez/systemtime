@@ -13,11 +13,13 @@ export default function EmpleadosBiometricoPage() {
     fetch('/api/empleados')
       .then(res => res.json())
       .then(data => {
-        setEmpleados(data)
+        const empleadosData = Array.isArray(data) ? data : []
+        setEmpleados(empleadosData)
         setLoading(false)
       })
       .catch(err => {
         console.error(err)
+        setEmpleados([])
         setLoading(false)
       })
   }, [])
@@ -33,24 +35,25 @@ export default function EmpleadosBiometricoPage() {
       <Card className="p-6">
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">
-            Total de empleados: <span className="font-bold">{empleados.length}</span>
+            Total de empleados: <span className="font-bold">{Array.isArray(empleados) ? empleados.length : 0}</span>
           </p>
         </div>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Legajo (Nº AC)</TableHead>
-              <TableHead>Nº Empleado</TableHead>
+              <TableHead>DNI (Nº AC)</TableHead>
+              <TableHead>Legajo (Nº ID)</TableHead>
+              <TableHead>Apellido</TableHead>
               <TableHead>Nombre</TableHead>
-              <TableHead>Departamento</TableHead>
+              <TableHead>Escuela</TableHead>
               <TableHead>Estado</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {empleados.length === 0 ? (
+            {!Array.isArray(empleados) || empleados.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   No hay empleados registrados. Importe marcaciones para crear empleados automáticamente.
                 </TableCell>
               </TableRow>
@@ -58,7 +61,8 @@ export default function EmpleadosBiometricoPage() {
               empleados.map(emp => (
                 <TableRow key={emp.id}>
                   <TableCell className="font-medium">{emp.numeroAC}</TableCell>
-                  <TableCell>{emp.numeroEmpleado || '-'}</TableCell>
+                  <TableCell>{emp.numeroId || '-'}</TableCell>
+                  <TableCell className="font-medium">{emp.apellido}</TableCell>
                   <TableCell>{emp.nombre}</TableCell>
                   <TableCell>{emp.departamento || '-'}</TableCell>
                   <TableCell>

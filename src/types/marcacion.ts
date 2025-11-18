@@ -1,4 +1,5 @@
-export interface MarcacionExcel {
+// Formato 1: Archivo CON errores/excepciones (Marcaciones del...)
+export interface MarcacionExcelConErrores {
   'Nº AC.': string;
   'Nº': string;
   'Nombre': string;
@@ -9,10 +10,28 @@ export interface MarcacionExcel {
   'Operación'?: string;
 }
 
+// Formato 2: Archivo SIN errores (Ac Reg del...)
+export interface MarcacionExcelSinErrores {
+  'Departamento': string;
+  'Nombre': string;
+  'AC Nº': string;
+  'Día/Hora': string;
+  'Estado': 'Entrada' | 'Salida';
+  'Equipo': string;
+  'Número ID': string;
+  'Modo Marc.': string;
+  'Tarjeta': string;
+}
+
+// Unión de ambos tipos
+export type MarcacionExcel = MarcacionExcelConErrores | MarcacionExcelSinErrores
+
 export interface MarcacionNormalizada {
-  numeroAC: string;
-  numeroEmpleado: string;
+  numeroAC: string; // DNI
+  numeroId?: string; // Rol/Legajo
   nombre: string;
+  apellido: string;
+  departamento?: string; // Escuela (solo en formato sin errores)
   fechaHora: Date;
   estado: 'Entrada' | 'Salida';
   excepcion: 'FOT' | 'Invalido' | 'Repetido';

@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { prisma } from '@/lib/prisma'
-import { formatearFecha, formatearHora } from '@/lib/utils'
+import { formatearFecha, formatearHora, formatearFechaParaNombreArchivo } from '@/lib/utils'
 import { startOfDay } from 'date-fns'
 
 interface GenerarInformeOptions {
@@ -55,9 +55,10 @@ export async function generarInformePDF(
   doc.text(`Modo: ${modo === 'tolerante' ? 'TOLERANTE' : 'ESTRICTO'}`, 105, 28, { align: 'center' })
 
   doc.setFontSize(10)
-  doc.text(`Empleado: ${empleado.nombre}`, 20, 40)
-  doc.text(`Legajo: ${empleado.numeroAC}`, 20, 46)
-  doc.text(`Período: ${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`, 20, 52)
+  doc.text(`Empleado: ${empleado.apellido}, ${empleado.nombre}`, 20, 40)
+  doc.text(`DNI: ${empleado.numeroAC}`, 20, 46)
+  doc.text(`Legajo: ${empleado.numeroId || 'N/A'}`, 20, 52)
+  doc.text(`Período: ${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`, 20, 58)
 
   // Tabla
   const tableData = asistenciasFiltradas.map(a => {
@@ -84,7 +85,7 @@ export async function generarInformePDF(
     : ['Fecha', 'E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'Horas']
 
   autoTable(doc, {
-    startY: 60,
+    startY: 66,
     head: [headers],
     body: tableData,
     theme: 'grid',
@@ -110,7 +111,7 @@ export async function generarInformePDF(
     { align: 'center' }
   )
 
-  const nombreArchivo = `informe_${empleado.numeroAC}_${formatearFecha(fechaInicio)}_${modo}.pdf`
+  const nombreArchivo = `informe_${empleado.numeroAC}_${formatearFechaParaNombreArchivo(fechaInicio)}_${modo}.pdf`
 
   await prisma.informe.create({
     data: {

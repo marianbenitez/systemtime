@@ -10,22 +10,92 @@ import { Card } from '@/components/ui/card'
 interface Empleado {
   id: number
   numeroAC: string
+  numeroId?: string
   nombre: string
+  apellido: string
+  departamento?: string
 }
 
 export function GeneradorPDF() {
   const [empleados, setEmpleados] = useState<Empleado[]>([])
+  const [empleadosFiltrados, setEmpleadosFiltrados] = useState<Empleado[]>([])
   const [empleadoId, setEmpleadoId] = useState('')
   const [fechaInicio, setFechaInicio] = useState('')
   const [fechaFin, setFechaFin] = useState('')
   const [modo, setModo] = useState<'tolerante' | 'estricto'>('tolerante')
   const [loading, setLoading] = useState(false)
 
+  // Filtros de búsqueda
+  const [filtroDNI, setFiltroDNI] = useState('')
+  const [filtroLegajo, setFiltroLegajo] = useState('')
+  const [filtroApellido, setFiltroApellido] = useState('')
+  const [filtroNombre, setFiltroNombre] = useState('')
+  const [filtroEscuela, setFiltroEscuela] = useState('')
+
   useEffect(() => {
     fetch('/api/empleados')
       .then(res => res.json())
-      .then(setEmpleados)
+      .then(data => {
+        const empleadosData = Array.isArray(data) ? data : []
+        setEmpleados(empleadosData)
+        setEmpleadosFiltrados(empleadosData)
+      })
+      .catch(error => {
+        console.error('Error al cargar empleados:', error)
+        setEmpleados([])
+        setEmpleadosFiltrados([])
+      })
   }, [])
+
+  // Aplicar filtros
+  useEffect(() => {
+    if (!Array.isArray(empleados)) {
+      setEmpleadosFiltrados([])
+      return
+    }
+
+    let resultados = [...empleados]
+
+    if (filtroDNI) {
+      resultados = resultados.filter(emp =>
+        emp.numeroAC?.toLowerCase().includes(filtroDNI.toLowerCase())
+      )
+    }
+
+    if (filtroLegajo) {
+      resultados = resultados.filter(emp =>
+        emp.numeroId?.toLowerCase().includes(filtroLegajo.toLowerCase())
+      )
+    }
+
+    if (filtroApellido) {
+      resultados = resultados.filter(emp =>
+        emp.apellido?.toLowerCase().includes(filtroApellido.toLowerCase())
+      )
+    }
+
+    if (filtroNombre) {
+      resultados = resultados.filter(emp =>
+        emp.nombre?.toLowerCase().includes(filtroNombre.toLowerCase())
+      )
+    }
+
+    if (filtroEscuela) {
+      resultados = resultados.filter(emp =>
+        emp.departamento?.toLowerCase().includes(filtroEscuela.toLowerCase())
+      )
+    }
+
+    setEmpleadosFiltrados(resultados)
+  }, [empleados, filtroDNI, filtroLegajo, filtroApellido, filtroNombre, filtroEscuela])
+
+  const limpiarFiltros = () => {
+    setFiltroDNI('')
+    setFiltroLegajo('')
+    setFiltroApellido('')
+    setFiltroNombre('')
+    setFiltroEscuela('')
+  }
 
   const handleGenerar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,6 +134,96 @@ export function GeneradorPDF() {
       <h2 className="text-2xl font-bold mb-4">Generar Informe PDF</h2>
 
       <form onSubmit={handleGenerar} className="space-y-4">
+        {/* Filtros de búsqueda */}
+        <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
+          <div className="flex items-center justify-between mb-2">
+            <Label className="text-base font-semibold">Filtrar Empleados</Label>
+            {(filtroDNI || filtroLegajo || filtroApellido || filtroNombre || filtroEscuela) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={limpiarFiltros}
+                className="h-7 text-xs"
+              >
+                Limpiar filtros
+              </Button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="filtroDNI" className="text-xs text-muted-foreground">
+                DNI
+              </Label>
+              <Input
+                id="filtroDNI"
+                placeholder="Buscar por DNI..."
+                value={filtroDNI}
+                onChange={(e) => setFiltroDNI(e.target.value)}
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="filtroLegajo" className="text-xs text-muted-foreground">
+                Legajo
+              </Label>
+              <Input
+                id="filtroLegajo"
+                placeholder="Buscar por legajo..."
+                value={filtroLegajo}
+                onChange={(e) => setFiltroLegajo(e.target.value)}
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="filtroApellido" className="text-xs text-muted-foreground">
+                Apellido
+              </Label>
+              <Input
+                id="filtroApellido"
+                placeholder="Buscar por apellido..."
+                value={filtroApellido}
+                onChange={(e) => setFiltroApellido(e.target.value)}
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="filtroNombre" className="text-xs text-muted-foreground">
+                Nombre
+              </Label>
+              <Input
+                id="filtroNombre"
+                placeholder="Buscar por nombre..."
+                value={filtroNombre}
+                onChange={(e) => setFiltroNombre(e.target.value)}
+                className="h-9"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="filtroEscuela" className="text-xs text-muted-foreground">
+                Escuela
+              </Label>
+              <Input
+                id="filtroEscuela"
+                placeholder="Buscar por escuela..."
+                value={filtroEscuela}
+                onChange={(e) => setFiltroEscuela(e.target.value)}
+                className="h-9"
+              />
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Mostrando {Array.isArray(empleadosFiltrados) ? empleadosFiltrados.length : 0} de {Array.isArray(empleados) ? empleados.length : 0} empleado(s)
+          </p>
+        </div>
+
+        {/* Selector de empleado */}
         <div>
           <Label htmlFor="empleado">Empleado *</Label>
           <Select value={empleadoId} onValueChange={setEmpleadoId} required>
@@ -71,11 +231,18 @@ export function GeneradorPDF() {
               <SelectValue placeholder="Seleccionar empleado" />
             </SelectTrigger>
             <SelectContent>
-              {empleados.map(emp => (
-                <SelectItem key={emp.id} value={emp.id.toString()}>
-                  {emp.nombre} ({emp.numeroAC})
-                </SelectItem>
-              ))}
+              {!Array.isArray(empleadosFiltrados) || empleadosFiltrados.length === 0 ? (
+                <div className="p-2 text-center text-sm text-muted-foreground">
+                  No se encontraron empleados
+                </div>
+              ) : (
+                empleadosFiltrados.map(emp => (
+                  <SelectItem key={emp.id} value={emp.id.toString()}>
+                    {emp.apellido}, {emp.nombre} - DNI: {emp.numeroAC}
+                    {emp.numeroId && ` - Legajo: ${emp.numeroId}`}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

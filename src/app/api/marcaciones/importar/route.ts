@@ -19,11 +19,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const datosExcel = await leerExcelMarcaciones(archivoMarcaciones)
-    validarEstructuraExcel(datosExcel)
+    // Leer Excel con detección automática de formato
+    const { datos: datosExcel, formato } = await leerExcelMarcaciones(archivoMarcaciones)
+
+    console.log(`📊 Formato detectado: ${formato}`)
+    console.log(`📊 Total de registros: ${datosExcel.length}`)
+
+    validarEstructuraExcel(datosExcel, formato)
 
     const marcaciones = datosExcel
-      .map(normalizarMarcacion)
+      .map(row => normalizarMarcacion(row, formato))
       .filter((m): m is NonNullable<typeof m> => m !== null)
 
     const importacion = await prisma.importacion.create({
@@ -41,7 +46,7 @@ export async function POST(request: NextRequest) {
     await prisma.marcacionRaw.createMany({
       data: marcaciones.map(m => ({
         numeroAC: m.numeroAC,
-        nombre: m.nombre,
+        nombre: `${m.apellido}, ${m.nombre}`, // Guardar nombre completo
         fechaHora: m.fechaHora,
         estado: m.estado,
         excepcion: m.excepcion,
@@ -54,15 +59,23 @@ export async function POST(request: NextRequest) {
     const porEmpleado = agruparPorEmpleado(marcaciones)
 
     for (const [numeroAC, marcasEmpleado] of porEmpleado.entries()) {
+      const primeraM = marcasEmpleado[0]
+
       const empleado = await prisma.empleado.upsert({
         where: { numeroAC },
         create: {
           numeroAC,
-          numeroEmpleado: marcasEmpleado[0].numeroEmpleado,
-          nombre: marcasEmpleado[0].nombre
+          numeroId: primeraM.numeroId,
+          nombre: primeraM.nombre,
+          apellido: primeraM.apellido,
+          departamento: primeraM.departamento // Se incluirá si existe (formato sin errores)
         },
         update: {
-          nombre: marcasEmpleado[0].nombre
+          nombre: primeraM.nombre,
+          apellido: primeraM.apellido,
+          numeroId: primeraM.numeroId,
+          // Solo actualizar departamento si viene en el archivo (no sobrescribir con undefined)
+          ...(primeraM.departamento && { departamento: primeraM.departamento })
         }
       })
 
@@ -76,7 +89,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       importacion,
-      mensaje: `Se procesaron ${marcaciones.length} marcaciones de ${porEmpleado.size} empleados`
+      formato,
+      mensaje: `Se procesaron ${marcaciones.length} marcaciones de ${porEmpleado.size} empleados (Formato: ${formato === 'CON_ERRORES' ? 'CON ERRORES' : 'SIN ERRORES'})`
     })
 
   } catch (error) {
