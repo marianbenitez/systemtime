@@ -97,12 +97,12 @@ export async function generarInformePDF(
 
   const finalY = (doc as any).lastAutoTable.finalY + 10
   doc.setFontSize(11)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text(`TOTAL DÍAS TRABAJADOS: ${diasTrabajados}`, 20, finalY)
   doc.text(`TOTAL HORAS: ${totalHoras.toFixed(2)}`, 20, finalY + 6)
 
   doc.setFontSize(8)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   doc.text(
     `Generado: ${new Date().toLocaleString('es-AR')}`,
     105,

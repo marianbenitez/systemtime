@@ -7,8 +7,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
-  // Deshabilitar Turbopack temporalmente para compilación
-  turbo: undefined,
 };
 
 export default nextConfig;
