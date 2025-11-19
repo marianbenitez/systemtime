@@ -1,6 +1,6 @@
 # Solución: Login en Vercel
 
-**Tu URL de Vercel**: `https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app`
+**Tu URL de Vercel (Producción)**: `https://systemtime.vercel.app`
 
 **Estado Actual**:
 - ✅ Conexión con Supabase: FUNCIONANDO
@@ -27,7 +27,7 @@ http://localhost:3000
 
 **Valor CORRECTO** (cámbialo a):
 ```
-https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app
+https://systemtime.vercel.app
 ```
 
 ### Importante:
@@ -68,7 +68,7 @@ Después de cambiar las variables:
 
 Accede a:
 ```
-https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app/api/test-auth
+https://systemtime.vercel.app/api/test-auth
 ```
 
 **Respuesta Esperada**:
@@ -77,7 +77,7 @@ https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app/api/test-
   "status": "success",
   "environment": {
     "hasNextAuthUrl": true,
-    "nextAuthUrl": "https://systemtime-bz64dr4s7-...",
+    "nextAuthUrl": "https://systemtime.vercel.app",
     "hasNextAuthSecret": true
   },
   "database": {
@@ -102,7 +102,7 @@ https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app/api/test-
 
 Accede a:
 ```
-https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app/auth/login
+https://systemtime.vercel.app/auth/login
 ```
 
 **Credenciales de prueba**:
@@ -128,7 +128,7 @@ https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app/auth/logi
 **Causa**: NEXTAUTH_URL no coincide con la URL real
 **Solución**: Verifica que NEXTAUTH_URL sea exactamente:
 ```
-https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app
+https://systemtime.vercel.app
 ```
 
 #### Error: "No secret provided"
@@ -153,7 +153,7 @@ https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app
 |----------|-------|----------|
 | `DATABASE_URL` | `postgresql://postgres.jmxlkjcfzwfsduthiyzm:System%402025@aws-0-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true` | Production, Preview, Development |
 | `DIRECT_URL` | `postgresql://postgres.jmxlkjcfzwfsduthiyzm:System%402025@aws-0-us-west-2.pooler.supabase.com:5432/postgres` | Production, Preview, Development |
-| `NEXTAUTH_URL` | `https://systemtime-bz64dr4s7-benitezmariano5-2829s-projects.vercel.app` | Production, Preview, Development |
+| `NEXTAUTH_URL` | `https://systemtime.vercel.app` | Production, Preview, Development |
 | `NEXTAUTH_SECRET` | `hX/N5Io2qeV/pgbVBYdEa/9BaAp1Deo8sgz3/8w+cDQ=` | Production, Preview, Development |
 | `NODE_ENV` | `production` | Production |
 
