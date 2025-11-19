@@ -20,6 +20,14 @@ export default function LoginPage() {
     setError("")
     setIsLoading(true)
 
+    console.log("🔐 [LOGIN] Iniciando proceso de login...")
+    console.log("📧 [LOGIN] Email:", email)
+    console.log("🌍 [LOGIN] Environment:", {
+      hostname: window.location.hostname,
+      href: window.location.href,
+      origin: window.location.origin
+    })
+
     try {
       const result = await signIn("credentials", {
         email,
@@ -28,25 +36,46 @@ export default function LoginPage() {
         callbackUrl: "/dashboard"
       })
 
-      console.log("SignIn result:", result)
+      console.log("📊 [LOGIN] SignIn result completo:", JSON.stringify(result, null, 2))
 
       if (result?.error) {
-        console.error("SignIn error:", result.error)
+        console.error("❌ [LOGIN] Error en signIn:", result.error)
+        console.error("📝 [LOGIN] Tipo de error:", typeof result.error)
         setError(result.error === "CredentialsSignin"
           ? "Credenciales inválidas"
           : result.error)
       } else if (result?.ok) {
-        console.log("Login successful, redirecting to dashboard")
+        console.log("✅ [LOGIN] Login exitoso!")
+        console.log("🔄 [LOGIN] Estado del resultado:", {
+          ok: result.ok,
+          status: result.status,
+          url: result.url,
+          error: result.error
+        })
+        console.log("🚀 [LOGIN] Redirigiendo a /dashboard...")
+
+        // Agregar timeout para ver si hay algún problema
+        setTimeout(() => {
+          console.log("⏱️ [LOGIN] Timeout alcanzado - verificando redirección...")
+          console.log("📍 [LOGIN] Location actual:", window.location.href)
+        }, 1000)
+
         // Usar window.location para forzar navegación completa
         window.location.href = "/dashboard"
       } else {
+        console.error("⚠️ [LOGIN] Resultado inesperado:", result)
         setError("Error desconocido al iniciar sesión")
       }
     } catch (error) {
-      console.error("Login exception:", error)
+      console.error("💥 [LOGIN] Excepción capturada:", error)
+      console.error("📋 [LOGIN] Detalles del error:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
       setError("Error al iniciar sesión")
     } finally {
       setIsLoading(false)
+      console.log("🏁 [LOGIN] Proceso de login finalizado")
     }
   }
 

@@ -1,5 +1,8 @@
 // Script para verificar conexión con Supabase
 require('dotenv').config();
+
+console.log('Debug: DATABASE_URL is ' + (process.env.DATABASE_URL ? 'defined' : 'undefined'));
+
 const { PrismaClient } = require('../src/generated/prisma');
 
 const prisma = new PrismaClient();

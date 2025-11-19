@@ -9,12 +9,31 @@ export default function DashboardPage() {
   const { user } = useCurrentUser()
   const [stats, setStats] = useState<any>(null)
 
+  console.log("🏠 [DASHBOARD] Componente montado")
+  console.log("👤 [DASHBOARD] Usuario:", user)
+
   useEffect(() => {
+    console.log("⚡ [DASHBOARD] useEffect ejecutado")
+    console.log("👤 [DASHBOARD] Usuario en useEffect:", user)
+    console.log("🔐 [DASHBOARD] Rol del usuario:", user?.role)
+    console.log("✅ [DASHBOARD] Puede gestionar asistencia:", canManageAttendance(user?.role))
+
     if (canManageAttendance(user?.role)) {
+      console.log("📊 [DASHBOARD] Obteniendo estadísticas...")
       fetch('/api/estadisticas')
-        .then(res => res.json())
-        .then(setStats)
-        .catch(console.error)
+        .then(res => {
+          console.log("📥 [DASHBOARD] Respuesta de estadísticas recibida:", res.status)
+          return res.json()
+        })
+        .then(data => {
+          console.log("📊 [DASHBOARD] Estadísticas:", data)
+          setStats(data)
+        })
+        .catch(err => {
+          console.error("❌ [DASHBOARD] Error al obtener estadísticas:", err)
+        })
+    } else {
+      console.log("⚠️ [DASHBOARD] Usuario sin permisos para ver estadísticas")
     }
   }, [user])
 
