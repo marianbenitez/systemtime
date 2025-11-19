@@ -92,6 +92,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Si la URL ya es absoluta y es del mismo sitio, úsala
+      if (url.startsWith(baseUrl)) return url
+      // Si es una ruta relativa, agrégala al baseUrl
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Por defecto, redirige al dashboard
+      return `${baseUrl}/dashboard`
     }
   },
   secret: process.env.NEXTAUTH_SECRET,

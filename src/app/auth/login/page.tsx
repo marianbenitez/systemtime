@@ -25,15 +25,25 @@ export default function LoginPage() {
         email,
         password,
         redirect: false,
+        callbackUrl: "/dashboard"
       })
 
+      console.log("SignIn result:", result)
+
       if (result?.error) {
-        setError("Credenciales inválidas")
+        console.error("SignIn error:", result.error)
+        setError(result.error === "CredentialsSignin"
+          ? "Credenciales inválidas"
+          : result.error)
+      } else if (result?.ok) {
+        console.log("Login successful, redirecting to dashboard")
+        // Usar window.location para forzar navegación completa
+        window.location.href = "/dashboard"
       } else {
-        router.push("/dashboard")
-        router.refresh()
+        setError("Error desconocido al iniciar sesión")
       }
     } catch (error) {
+      console.error("Login exception:", error)
       setError("Error al iniciar sesión")
     } finally {
       setIsLoading(false)
