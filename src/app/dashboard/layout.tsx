@@ -1,11 +1,19 @@
+"use client"
+
 import { Navbar } from "@/components/dashboard/navbar"
 import { Sidebar } from "@/components/dashboard/sidebar"
+import { useEffect } from "react"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  useEffect(() => {
+    console.log("🏗️ [DASHBOARD-LAYOUT] Layout montado")
+    console.log("📍 [DASHBOARD-LAYOUT] Location:", window.location.href)
+  }, [])
+
   return (
     <div className="h-screen flex flex-col">
       <Navbar />
