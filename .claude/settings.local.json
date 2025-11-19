@@ -13,7 +13,9 @@
       "Bash(chmod:*)",
       "Bash(./scripts/importar-dual.sh:*)",
       "Bash(echo:*)",
-      "Bash(npx prisma db pull:*)"
+      "Bash(npx prisma db pull:*)",
+      "Bash(node analizar-excel.js:*)",
+      "Bash(node analizar-empleados.js:*)"
     ],
     "deny": [],
     "ask": []

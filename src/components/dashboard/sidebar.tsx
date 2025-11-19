@@ -47,6 +47,10 @@ const navItems: NavItem[] = [
     href: "/dashboard/empleados-biometrico",
   },
   {
+    title: "Asistencias Biométrico",
+    href: "/dashboard/asistencias-biometrico",
+  },
+  {
     title: "Generar Informes",
     href: "/dashboard/informes",
   },
@@ -64,7 +68,11 @@ export function Sidebar() {
       return canManageAttendance(user?.role)
     }
     // Sistema biométrico accesible para admins
-    if (item.href === "/dashboard/marcaciones" || item.href === "/dashboard/marcaciones-dual" || item.href === "/dashboard/empleados-biometrico" || item.href === "/dashboard/informes") {
+    if (item.href === "/dashboard/marcaciones" ||
+        item.href === "/dashboard/marcaciones-dual" ||
+        item.href === "/dashboard/empleados-biometrico" ||
+        item.href === "/dashboard/asistencias-biometrico" ||
+        item.href === "/dashboard/informes") {
       return canManageAttendance(user?.role)
     }
     return true

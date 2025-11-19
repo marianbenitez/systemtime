@@ -24,7 +24,9 @@ export async function proxy(req: NextRequest) {
     const adminRoutes = [
       "/dashboard/attendance",
       "/dashboard/marcaciones",
+      "/dashboard/marcaciones-dual",
       "/dashboard/empleados-biometrico",
+      "/dashboard/asistencias-biometrico",
       "/dashboard/informes"
     ]
 
