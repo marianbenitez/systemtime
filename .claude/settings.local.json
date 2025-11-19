@@ -16,7 +16,10 @@
       "Bash(npx prisma db pull:*)",
       "Bash(node analizar-excel.js:*)",
       "Bash(node analizar-empleados.js:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nMigración a Supabase + PostgreSQL + preparación para Vercel\n\n- Actualizado schema.prisma a PostgreSQL con directUrl\n- Migrado de MySQL a Supabase PostgreSQL\n- Actualizado CLAUDE.md con documentación completa\n- Agregada documentación de análisis Supabase + Vercel\n- Agregados scripts de verificación y testing\n- Configuradas variables de entorno para Supabase\n- Sistema listo para deployment en Vercel\n\n🤖 Generated with Claude Code\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
