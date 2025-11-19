@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -12,44 +9,31 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum Role {
-  SUPERADMIN
-  ADMIN
-  USER
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  LATE
-  JUSTIFIED
-}
-
 model User {
-  id            String       @id @default(cuid())
-  email         String       @unique
-  name          String
-  password      String
-  role          Role         @default(USER)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  attendances   Attendance[]
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String
+  password    String
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  attendances Attendance[]
 
   @@index([email])
   @@map("users")
 }
 
 model Attendance {
-  id          String           @id @default(cuid())
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date        DateTime
-  status      AttendanceStatus
-  checkIn     DateTime?
-  checkOut    DateTime?
-  notes       String?          @db.Text
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id        String           @id @default(cuid())
+  userId    String
+  date      DateTime
+  status    AttendanceStatus
+  checkIn   DateTime?
+  checkOut  DateTime?
+  notes     String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([date])
@@ -62,12 +46,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   @@unique([provider, providerAccountId])
@@ -92,31 +76,130 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// ============================================
-// MODELOS PARA SISTEMA DE MARCACIONES BIOMÉTRICAS
-// ============================================
-
-// Modelo: Empleado
 model Empleado {
-  id              Int       @id @default(autoincrement())
-  numeroAC        String    @unique @db.VarChar(20) @map("numero_ac") // DNI
-  numeroId        String?   @db.VarChar(10) @map("numero_id") // Legajo
-  nombre          String    @db.VarChar(150)
-  apellido        String    @db.VarChar(150)
-  departamento    String?   @db.VarChar(100) // Escuela
-  activo          Boolean   @default(true)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-
-  asistencias     AsistenciaDiaria[]
-  resumenMensual  ResumenMensual[]
-  informes        Informe[]
+  id             Int                @id @default(autoincrement())
+  numeroAC       String             @unique @map("numero_ac") @db.VarChar(20)
+  numeroId       String?            @map("numero_id") @db.VarChar(10)
+  nombre         String             @db.VarChar(150)
+  apellido       String             @db.VarChar(150)
+  departamento   String?            @db.VarChar(100)
+  activo         Boolean            @default(true)
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  asistencias    AsistenciaDiaria[]
+  informes       Informe[]
+  resumenMensual ResumenMensual[]
 
   @@index([numeroAC])
   @@map("empleados")
 }
 
-// Modelo: Importación
+model Importacion {
+  id                 Int            @id @default(autoincrement())
+  nombreArchivo      String         @map("nombre_archivo") @db.VarChar(255)
+  tipoArchivo        TipoArchivo    @map("tipo_archivo")
+  fechaInicio        DateTime       @map("fecha_inicio") @db.Date
+  fechaFin           DateTime       @map("fecha_fin") @db.Date
+  totalRegistros     Int            @map("total_registros")
+  registrosValidos   Int            @map("registros_validos")
+  registrosInvalidos Int            @map("registros_invalidos")
+  usuario            String?        @db.VarChar(100)
+  createdAt          DateTime       @default(now()) @map("created_at")
+  marcaciones        MarcacionRaw[]
+
+  @@index([fechaInicio, fechaFin])
+  @@map("importaciones")
+}
+
+model MarcacionRaw {
+  id            Int                @id @default(autoincrement())
+  numeroAC      String             @map("numero_ac") @db.VarChar(20)
+  nombre        String             @db.VarChar(255)
+  fechaHora     DateTime           @map("fecha_hora")
+  estado        EstadoMarcacion
+  excepcion     ExcepcionMarcacion @default(FOT)
+  nuevoEstado   String?            @map("nuevo_estado") @db.VarChar(50)
+  operacion     String?            @db.VarChar(50)
+  importacionId Int                @map("importacion_id")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  importacion   Importacion        @relation(fields: [importacionId], references: [id], onDelete: Cascade)
+
+  @@index([numeroAC, fechaHora])
+  @@index([importacionId])
+  @@map("marcaciones_raw")
+}
+
+model AsistenciaDiaria {
+  id              Int       @id @default(autoincrement())
+  empleadoId      Int       @map("empleado_id")
+  fecha           DateTime  @db.Date
+  entrada1        DateTime? @map("entrada_1")
+  salida1         DateTime? @map("salida_1")
+  entrada2        DateTime? @map("entrada_2")
+  salida2         DateTime? @map("salida_2")
+  entrada3        DateTime? @map("entrada_3")
+  salida3         DateTime? @map("salida_3")
+  horasTrabajadas Decimal   @default(0) @map("horas_trabajadas") @db.Decimal(5, 2)
+  tieneErrores    Boolean   @default(false) @map("tiene_errores")
+  tipoError       String?   @map("tipo_error") @db.VarChar(100)
+  observaciones   String?
+  marcacionesRaw  String?   @map("marcaciones_raw")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  empleado        Empleado  @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
+
+  @@unique([empleadoId, fecha], name: "unique_empleado_fecha")
+  @@index([fecha])
+  @@index([empleadoId, fecha])
+  @@map("asistencia_diaria")
+}
+
+model ResumenMensual {
+  id             Int      @id @default(autoincrement())
+  empleadoId     Int      @map("empleado_id")
+  año           Int
+  mes            Int
+  diasTrabajados Int      @default(0) @map("dias_trabajados")
+  totalHoras     Decimal  @default(0) @map("total_horas") @db.Decimal(7, 2)
+  diasConErrores Int      @default(0) @map("dias_con_errores")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  empleado       Empleado @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
+
+  @@unique([empleadoId, año, mes], name: "unique_empleado_periodo")
+  @@index([año, mes])
+  @@map("resumen_mensual")
+}
+
+model Informe {
+  id                  Int         @id @default(autoincrement())
+  empleadoId          Int         @map("empleado_id")
+  tipoInforme         TipoInforme @map("tipo_informe")
+  fechaInicio         DateTime    @map("fecha_inicio") @db.Date
+  fechaFin            DateTime    @map("fecha_fin") @db.Date
+  archivoPath         String?     @map("archivo_path") @db.VarChar(500)
+  totalDiasTrabajados Int?        @map("total_dias_trabajados")
+  totalHoras          Decimal?    @map("total_horas") @db.Decimal(7, 2)
+  createdAt           DateTime    @default(now()) @map("created_at")
+  empleado            Empleado    @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
+
+  @@index([empleadoId, fechaInicio, fechaFin])
+  @@map("informes")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  JUSTIFIED
+}
+
 enum TipoArchivo {
   marcaciones
   invalidos
@@ -124,25 +207,6 @@ enum TipoArchivo {
   @@map("tipo_archivo")
 }
 
-model Importacion {
-  id                  Int       @id @default(autoincrement())
-  nombreArchivo       String    @db.VarChar(255) @map("nombre_archivo")
-  tipoArchivo         TipoArchivo @map("tipo_archivo")
-  fechaInicio         DateTime  @db.Date @map("fecha_inicio")
-  fechaFin            DateTime  @db.Date @map("fecha_fin")
-  totalRegistros      Int       @map("total_registros")
-  registrosValidos    Int       @map("registros_validos")
-  registrosInvalidos  Int       @map("registros_invalidos")
-  usuario             String?   @db.VarChar(100)
-  createdAt           DateTime  @default(now()) @map("created_at")
-
-  marcaciones         MarcacionRaw[]
-
-  @@index([fechaInicio, fechaFin])
-  @@map("importaciones")
-}
-
-// Modelo: Marcación Raw
 enum EstadoMarcacion {
   Entrada
   Salida
@@ -158,92 +222,9 @@ enum ExcepcionMarcacion {
   @@map("excepcion_marcacion")
 }
 
-model MarcacionRaw {
-  id            Int       @id @default(autoincrement())
-  numeroAC      String    @db.VarChar(20) @map("numero_ac")
-  nombre        String    @db.VarChar(255)
-  fechaHora     DateTime  @map("fecha_hora")
-  estado        EstadoMarcacion
-  excepcion     ExcepcionMarcacion @default(FOT)
-  nuevoEstado   String?   @db.VarChar(50) @map("nuevo_estado")
-  operacion     String?   @db.VarChar(50)
-  importacionId Int       @map("importacion_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-
-  importacion   Importacion @relation(fields: [importacionId], references: [id], onDelete: Cascade)
-
-  @@index([numeroAC, fechaHora])
-  @@index([importacionId])
-  @@map("marcaciones_raw")
-}
-
-// Modelo: Asistencia Diaria
-model AsistenciaDiaria {
-  id                Int       @id @default(autoincrement())
-  empleadoId        Int       @map("empleado_id")
-  fecha             DateTime  @db.Date
-  entrada1          DateTime? @map("entrada_1")
-  salida1           DateTime? @map("salida_1")
-  entrada2          DateTime? @map("entrada_2")
-  salida2           DateTime? @map("salida_2")
-  entrada3          DateTime? @map("entrada_3")
-  salida3           DateTime? @map("salida_3")
-  horasTrabajadas   Decimal   @default(0) @db.Decimal(5, 2) @map("horas_trabajadas")
-  tieneErrores      Boolean   @default(false) @map("tiene_errores")
-  tipoError         String?   @db.VarChar(100) @map("tipo_error")
-  observaciones     String?   @db.Text
-  marcacionesRaw    String?   @db.Text @map("marcaciones_raw")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-
-  empleado          Empleado  @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
-
-  @@unique([empleadoId, fecha], name: "unique_empleado_fecha")
-  @@index([fecha])
-  @@index([empleadoId, fecha])
-  @@map("asistencia_diaria")
-}
-
-// Modelo: Resumen Mensual
-model ResumenMensual {
-  id              Int       @id @default(autoincrement())
-  empleadoId      Int       @map("empleado_id")
-  año             Int
-  mes             Int
-  diasTrabajados  Int       @default(0) @map("dias_trabajados")
-  totalHoras      Decimal   @default(0) @db.Decimal(7, 2) @map("total_horas")
-  diasConErrores  Int       @default(0) @map("dias_con_errores")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-
-  empleado        Empleado  @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
-
-  @@unique([empleadoId, año, mes], name: "unique_empleado_periodo")
-  @@index([año, mes])
-  @@map("resumen_mensual")
-}
-
-// Modelo: Informe
 enum TipoInforme {
   tolerante
   estricto
 
   @@map("tipo_informe")
-}
-
-model Informe {
-  id                  Int         @id @default(autoincrement())
-  empleadoId          Int         @map("empleado_id")
-  tipoInforme         TipoInforme @map("tipo_informe")
-  fechaInicio         DateTime    @db.Date @map("fecha_inicio")
-  fechaFin            DateTime    @db.Date @map("fecha_fin")
-  archivoPath         String?     @db.VarChar(500) @map("archivo_path")
-  totalDiasTrabajados Int?        @map("total_dias_trabajados")
-  totalHoras          Decimal?    @db.Decimal(7, 2) @map("total_horas")
-  createdAt           DateTime    @default(now()) @map("created_at")
-
-  empleado            Empleado    @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
-
-  @@index([empleadoId, fechaInicio, fechaFin])
-  @@map("informes")
 }
