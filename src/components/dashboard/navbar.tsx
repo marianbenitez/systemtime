@@ -21,10 +21,16 @@ export function Navbar() {
 
   const handleSignOut = async () => {
     console.log("🚪 [NAVBAR] Iniciando cierre de sesión...")
-    await signOut({
-      redirect: true,
-      callbackUrl: "/auth/login"
-    })
+    try {
+      await signOut({
+        redirect: false
+      })
+      console.log("✅ [NAVBAR] Sesión cerrada exitosamente")
+      // Forzar recarga completa para limpiar todo el estado
+      window.location.href = "/auth/login"
+    } catch (error) {
+      console.error("❌ [NAVBAR] Error al cerrar sesión:", error)
+    }
   }
 
   const getInitials = (name: string) => {

@@ -43,11 +43,11 @@ export default function LoginPage() {
     })
 
     try {
+      console.log("🔄 [LOGIN] Llamando a signIn...")
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false,
-        callbackUrl: "/dashboard"
+        redirect: false
       })
 
       console.log("📊 [LOGIN] SignIn result completo:", JSON.stringify(result, null, 2))
@@ -68,9 +68,11 @@ export default function LoginPage() {
         })
         console.log("🚀 [LOGIN] Redirigiendo a /dashboard...")
 
-        // Usar router.push para redirección SPA compatible con Vercel
-        router.push("/dashboard")
-        router.refresh()
+        // Pequeño delay para asegurar que la sesión se actualizó
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        // Usar window.location para asegurar limpieza completa del estado
+        window.location.href = "/dashboard"
       } else {
         console.error("⚠️ [LOGIN] Resultado inesperado:", result)
         setError("Error desconocido al iniciar sesión")
