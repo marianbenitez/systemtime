@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
+export const config = {
+  matcher: ["/dashboard/:path*", "/auth/login"],
+  runtime: "edge"
+}
+
 export function middleware(req: NextRequest) {
   const sessionCookie = req.cookies.get("authjs.session-token") || req.cookies.get("__Secure-authjs.session-token")
   const isLoggedIn = !!sessionCookie
@@ -26,8 +31,4 @@ export function middleware(req: NextRequest) {
 
   console.log("✅ [MIDDLEWARE] Permitiendo acceso")
   return NextResponse.next()
-}
-
-export const config = {
-  matcher: ["/dashboard/:path*", "/auth/login"]
 }
