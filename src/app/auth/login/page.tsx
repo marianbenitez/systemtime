@@ -66,14 +66,9 @@ export default function LoginPage() {
         })
         console.log("🚀 [LOGIN] Redirigiendo a /dashboard...")
 
-        // Agregar timeout para ver si hay algún problema
-        setTimeout(() => {
-          console.log("⏱️ [LOGIN] Timeout alcanzado - verificando redirección...")
-          console.log("📍 [LOGIN] Location actual:", window.location.href)
-        }, 1000)
-
-        // Usar window.location para forzar navegación completa
-        window.location.href = "/dashboard"
+        // Usar router.push para redirección SPA compatible con Vercel
+        router.push("/dashboard")
+        router.refresh()
       } else {
         console.error("⚠️ [LOGIN] Resultado inesperado:", result)
         setError("Error desconocido al iniciar sesión")

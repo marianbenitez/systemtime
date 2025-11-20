@@ -116,26 +116,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       console.log("📍 [REDIRECT] URL solicitada:", url)
       console.log("🏠 [REDIRECT] Base URL:", baseUrl)
 
-      let redirectUrl: string
+      // Siempre devolver rutas relativas para evitar 307 en Vercel
+      if (url.startsWith("/")) {
+        console.log("✅ [REDIRECT] Ruta relativa, usando:", url)
+        return url
+      }
 
-      // Si la URL ya es absoluta y es del mismo sitio, úsala
       if (url.startsWith(baseUrl)) {
-        redirectUrl = url
-        console.log("✅ [REDIRECT] URL coincide con baseUrl, usando:", redirectUrl)
-      }
-      // Si es una ruta relativa, agrégala al baseUrl
-      else if (url.startsWith("/")) {
-        redirectUrl = `${baseUrl}${url}`
-        console.log("✅ [REDIRECT] Ruta relativa, construyendo:", redirectUrl)
-      }
-      // Por defecto, redirige al dashboard
-      else {
-        redirectUrl = `${baseUrl}/dashboard`
-        console.log("⚠️ [REDIRECT] URL no reconocida, usando default dashboard:", redirectUrl)
+        const path = url.replace(baseUrl, "")
+        console.log("✅ [REDIRECT] Extrayendo path de URL absoluta:", path)
+        return path || "/dashboard"
       }
 
-      console.log("🎯 [REDIRECT] URL final de redirección:", redirectUrl)
-      return redirectUrl
+      console.log("⚠️ [REDIRECT] Por defecto, redirigiendo a /dashboard")
+      return "/dashboard"
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
