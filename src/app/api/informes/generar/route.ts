@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generarInformePDF } from '@/lib/pdf/generador-informes'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,17 +13,12 @@ export async function POST(request: NextRequest) {
       modo
     })
 
-    // Crear directorio si no existe
-    const dirPath = join(process.cwd(), 'public', 'informes')
-    await mkdir(dirPath, { recursive: true })
-
-    const filePath = join(dirPath, resultado.nombreArchivo)
-    await writeFile(filePath, Buffer.from(resultado.buffer))
-
-    return NextResponse.json({
-      success: true,
-      url: `/informes/${resultado.nombreArchivo}`,
-      nombreArchivo: resultado.nombreArchivo
+    // Return the PDF buffer directly
+    return new NextResponse(resultado.buffer, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${resultado.nombreArchivo}"`
+      }
     })
 
   } catch (error) {

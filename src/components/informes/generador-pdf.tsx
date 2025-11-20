@@ -113,14 +113,38 @@ export function GeneradorPDF() {
         })
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        throw new Error(data.error)
+        const data = await response.json()
+        throw new Error(data.error || 'Error al generar informe')
       }
 
-      window.open(data.url, '_blank')
-      alert('Informe generado exitosamente!')
+      // Manejar la respuesta como Blob (archivo binario)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      
+      // Crear un enlace temporal para descargar
+      const a = document.createElement('a')
+      a.href = url
+      
+      // Intentar obtener el nombre del archivo del header o usar uno por defecto
+      const contentDisposition = response.headers.get('Content-Disposition')
+      let fileName = `informe-${empleadoId}.pdf`
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/)
+        if (match && match[1]) {
+          fileName = match[1]
+        }
+      }
+      
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      
+      // Limpieza
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      // alert('Informe generado exitosamente!') // Opcional, la descarga ya es feedback suficiente
 
     } catch (error) {
       alert('Error: ' + (error as Error).message)
