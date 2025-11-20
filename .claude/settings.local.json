@@ -30,7 +30,10 @@
       "Bash(timeout:*)",
       "Bash(node -e:*)",
       "Bash(node probar-login.js:*)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(npm install:*)",
+      "Bash(unset:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

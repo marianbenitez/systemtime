@@ -20,12 +20,14 @@ export default function LoginPage() {
   useEffect(() => {
     console.log("🔐 [LOGIN-PAGE] Verificando sesión existente...")
     console.log("📊 [LOGIN-PAGE] Status:", status)
+    console.log("📊 [LOGIN-PAGE] Session:", session)
 
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user) {
       console.log("✅ [LOGIN-PAGE] Ya autenticado, redirigiendo a dashboard")
       router.push("/dashboard")
+      router.refresh()
     }
-  }, [status, router])
+  }, [status, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

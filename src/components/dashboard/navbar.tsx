@@ -20,8 +20,11 @@ export function Navbar() {
   const router = useRouter()
 
   const handleSignOut = async () => {
-    await signOut({ redirect: false })
-    router.push("/auth/login")
+    console.log("🚪 [NAVBAR] Iniciando cierre de sesión...")
+    await signOut({
+      redirect: true,
+      callbackUrl: "/auth/login"
+    })
   }
 
   const getInitials = (name: string) => {

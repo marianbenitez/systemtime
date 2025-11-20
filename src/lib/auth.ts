@@ -31,6 +31,11 @@ declare module "@auth/core/jwt" {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  pages: {
+    signIn: "/auth/login",
+    signOut: "/auth/login",
+    error: "/auth/login",
+  },
   providers: [
     CredentialsProvider({
       name: "credentials",
