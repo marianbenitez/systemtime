@@ -33,7 +33,9 @@
       "Bash(ping:*)",
       "Bash(npm install:*)",
       "Bash(unset:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill -9)"
     ],
     "deny": [],
     "ask": []
