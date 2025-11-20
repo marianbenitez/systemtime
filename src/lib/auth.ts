@@ -1,4 +1,4 @@
-import NextAuth from "next-auth"
+import NextAuth, { type DefaultSession } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
@@ -11,7 +11,7 @@ declare module "next-auth" {
       email: string
       name: string
       role: Role
-    }
+    } & DefaultSession["user"]
   }
 
   interface User {
@@ -22,7 +22,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
+declare module "@auth/core/jwt" {
   interface JWT {
     id: string
     role: Role
