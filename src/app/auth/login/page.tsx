@@ -39,15 +39,19 @@ export default function LoginPage() {
     console.log("🌍 [LOGIN] Environment:", {
       hostname: window.location.hostname,
       href: window.location.href,
-      origin: window.location.origin
+      origin: window.location.origin,
+      isProduction: process.env.NODE_ENV === 'production',
+      nextAuthUrl: process.env.NEXTAUTH_URL || 'NOT SET'
     })
 
     try {
-      console.log("🔄 [LOGIN] Llamando a signIn...")
+      console.log("🔄 [LOGIN] Llamando a signIn con opciones mínimas...")
+
+      // Usar solo las opciones mínimas necesarias - redirect debe ser literal
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false
+        redirect: false as const
       })
 
       console.log("📊 [LOGIN] SignIn result completo:", JSON.stringify(result, null, 2))
