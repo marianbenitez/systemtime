@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 export function UploadExcelDual() {
   const [archivoSinErrores, setArchivoSinErrores] = useState<File | null>(null)
   const [archivoConErrores, setArchivoConErrores] = useState<File | null>(null)
+  const [habilitarConErrores, setHabilitarConErrores] = useState(false)
   const [fechaInicio, setFechaInicio] = useState('')
   const [fechaFin, setFechaFin] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,8 +20,8 @@ export function UploadExcelDual() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!archivoSinErrores || !archivoConErrores) {
-      setError('Debes seleccionar ambos archivos')
+    if (!archivoSinErrores || (habilitarConErrores && !archivoConErrores)) {
+      setError('Debes seleccionar los archivos requeridos')
       return
     }
 
@@ -31,7 +32,9 @@ export function UploadExcelDual() {
     try {
       const formData = new FormData()
       formData.append('archivoSinErrores', archivoSinErrores)
-      formData.append('archivoConErrores', archivoConErrores)
+      if (habilitarConErrores && archivoConErrores) {
+        formData.append('archivoConErrores', archivoConErrores)
+      }
       formData.append('fechaInicio', fechaInicio)
       formData.append('fechaFin', fechaFin)
 
@@ -64,18 +67,14 @@ export function UploadExcelDual() {
   return (
     <Card className="p-6">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold mb-2">Importación Dual de Marcaciones</h2>
-        <p className="text-sm text-muted-foreground">
-          Importa ambos archivos Excel del mismo período para obtener información completa:
-          departamentos del archivo SIN ERRORES y análisis de excepciones del archivo CON ERRORES.
-        </p>
+        {/* Título interno eliminado */}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Archivo SIN ERRORES */}
         <div className="space-y-2 p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
           <Label htmlFor="sinErrores" className="text-base font-semibold text-green-700 dark:text-green-400">
-            1. Archivo SIN ERRORES (Ac Reg del...)
+            Archivo de Marcaciones
           </Label>
           <p className="text-xs text-muted-foreground mb-2">
             Este archivo contiene el campo <strong>Departamento/Escuela</strong>
@@ -94,8 +93,22 @@ export function UploadExcelDual() {
           )}
         </div>
 
+        {/* Checkbox para habilitar segundo archivo */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="habilitarErrores"
+            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            checked={habilitarConErrores}
+            onChange={(e) => setHabilitarConErrores(e.target.checked)}
+          />
+          <Label htmlFor="habilitarErrores" className="text-sm font-medium leading-none cursor-pointer">
+            Habilitar carga de archivo con errores
+          </Label>
+        </div>
+
         {/* Archivo CON ERRORES */}
-        <div className="space-y-2 p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+        <div className={`space-y-2 p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20 transition-opacity ${!habilitarConErrores ? 'opacity-50' : ''}`}>
           <Label htmlFor="conErrores" className="text-base font-semibold text-blue-700 dark:text-blue-400">
             2. Archivo CON ERRORES (Marcaciones del...)
           </Label>
@@ -107,7 +120,8 @@ export function UploadExcelDual() {
             type="file"
             accept=".xls,.xlsx"
             onChange={(e) => setArchivoConErrores(e.target.files?.[0] || null)}
-            required
+            required={habilitarConErrores}
+            disabled={!habilitarConErrores}
           />
           {archivoConErrores && (
             <p className="text-xs text-blue-600 dark:text-blue-400">
@@ -142,7 +156,7 @@ export function UploadExcelDual() {
 
         <Button
           type="submit"
-          disabled={loading || !archivoSinErrores || !archivoConErrores}
+          disabled={loading || !archivoSinErrores || (habilitarConErrores && !archivoConErrores)}
           className="w-full"
         >
           {loading ? 'Importando...' : 'Importar Ambos Archivos'}

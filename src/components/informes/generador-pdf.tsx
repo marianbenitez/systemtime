@@ -121,11 +121,11 @@ export function GeneradorPDF() {
       // Manejar la respuesta como Blob (archivo binario)
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
-      
+
       // Crear un enlace temporal para descargar
       const a = document.createElement('a')
       a.href = url
-      
+
       // Intentar obtener el nombre del archivo del header o usar uno por defecto
       const contentDisposition = response.headers.get('Content-Disposition')
       let fileName = `informe-${empleadoId}.pdf`
@@ -135,15 +135,15 @@ export function GeneradorPDF() {
           fileName = match[1]
         }
       }
-      
+
       a.download = fileName
       document.body.appendChild(a)
       a.click()
-      
+
       // Limpieza
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-      
+
       // alert('Informe generado exitosamente!') // Opcional, la descarga ya es feedback suficiente
 
     } catch (error) {
@@ -158,7 +158,7 @@ export function GeneradorPDF() {
       <h2 className="text-2xl font-bold mb-4">Generar Informe PDF</h2>
 
       <form onSubmit={handleGenerar} className="space-y-4">
-        {/* Filtros de búsqueda */}
+        {/* Filtros de búsqueda - OCULTO POR AHORA
         <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
           <div className="flex items-center justify-between mb-2">
             <Label className="text-base font-semibold">Filtrar Empleados</Label>
@@ -246,6 +246,7 @@ export function GeneradorPDF() {
             Mostrando {Array.isArray(empleadosFiltrados) ? empleadosFiltrados.length : 0} de {Array.isArray(empleados) ? empleados.length : 0} empleado(s)
           </p>
         </div>
+        */}
 
         {/* Selector de empleado */}
         <div>

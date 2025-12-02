@@ -43,7 +43,7 @@ export default function EmpleadosBiometricoPage() {
           <TableHeader>
             <TableRow>
               <TableHead>DNI (Nº AC)</TableHead>
-              <TableHead>Legajo (Nº ID)</TableHead>
+              <TableHead>Rol</TableHead>
               <TableHead>Apellido</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Escuela</TableHead>

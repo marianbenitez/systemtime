@@ -4,7 +4,7 @@ export default function MarcacionesDualPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Importación Dual de Marcaciones</h1>
+        <h1 className="text-3xl font-bold mb-2">Importacion de Marcaciones Biometricas</h1>
         <p className="text-muted-foreground">
           Importa ambos archivos Excel del mismo período para combinar departamentos y análisis de errores.
         </p>
@@ -71,6 +71,7 @@ export default function MarcacionesDualPage() {
           </div>
         </div>
 
+        {/* SECCIÓN OCULTA POR AHORA
         <div className="bg-yellow-50 dark:bg-yellow-950/20 p-6 rounded-lg border border-yellow-200 dark:border-yellow-900">
           <h3 className="font-semibold text-lg mb-2 text-yellow-800 dark:text-yellow-400">
             Tipos de Errores Detectados
@@ -108,6 +109,7 @@ export default function MarcacionesDualPage() {
             </li>
           </ul>
         </div>
+        */}
       </div>
     </div>
   )
