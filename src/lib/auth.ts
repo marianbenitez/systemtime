@@ -4,14 +4,22 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { Role } from "@/generated/prisma"
 
-// Validar que AUTH_SECRET esté configurado
-if (!process.env.AUTH_SECRET) {
+// Validar que AUTH_SECRET o NEXTAUTH_SECRET esté configurado
+// AUTH_SECRET es para Auth.js v5+, NEXTAUTH_SECRET es para NextAuth.js v4
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
+
+if (!authSecret) {
   throw new Error(
     "❌ AUTH_SECRET no está configurado. " +
     "En desarrollo: crea .env.local con AUTH_SECRET=tu_secreto_aqui. " +
     "En producción: configura AUTH_SECRET en las variables de entorno del servidor. " +
     "Genera un secreto con: npx auth secret"
   )
+}
+
+// Asegurar que AUTH_SECRET esté disponible para next-auth
+if (!process.env.AUTH_SECRET && process.env.NEXTAUTH_SECRET) {
+  process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET
 }
 
 declare module "next-auth" {
