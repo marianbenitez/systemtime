@@ -4,6 +4,16 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { Role } from "@/generated/prisma"
 
+// Validar que AUTH_SECRET esté configurado
+if (!process.env.AUTH_SECRET) {
+  throw new Error(
+    "❌ AUTH_SECRET no está configurado. " +
+    "En desarrollo: crea .env.local con AUTH_SECRET=tu_secreto_aqui. " +
+    "En producción: configura AUTH_SECRET en las variables de entorno del servidor. " +
+    "Genera un secreto con: npx auth secret"
+  )
+}
+
 declare module "next-auth" {
   interface Session {
     user: {
@@ -44,44 +54,76 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("🔑 [AUTH] Iniciando authorize...")
-        console.log("📧 [AUTH] Email recibido:", credentials?.email)
+        try {
+          console.log("🔑 [AUTH] Iniciando authorize...")
+          console.log("📧 [AUTH] Email recibido:", credentials?.email)
 
-        if (!credentials?.email || !credentials?.password) {
-          console.error("❌ [AUTH] Credenciales faltantes")
-          throw new Error("Credenciales inválidas")
-        }
-
-        console.log("🔍 [AUTH] Buscando usuario en base de datos...")
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email as string
+          if (!credentials?.email || !credentials?.password) {
+            console.error("❌ [AUTH] Credenciales faltantes")
+            return null
           }
-        })
 
-        if (!user || !user.password) {
-          console.error("❌ [AUTH] Usuario no encontrado:", credentials.email)
-          throw new Error("Usuario no encontrado")
-        }
+          console.log("🔍 [AUTH] Buscando usuario en base de datos...")
+          
+          // Función para buscar usuario con reintentos (cold start de Neon)
+          const findUserWithRetry = async (email: string, maxRetries = 3) => {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+              try {
+                console.log(`🔄 [AUTH] Intento ${attempt}/${maxRetries} de conexión a BD...`)
+                const result = await prisma.user.findUnique({
+                  where: { email }
+                })
+                console.log(`✅ [AUTH] Conexión exitosa en intento ${attempt}`)
+                return result
+              } catch (dbError) {
+                console.error(`❌ [AUTH] Error en intento ${attempt}:`, dbError)
+                if (attempt === maxRetries) {
+                  throw dbError
+                }
+                // Esperar antes de reintentar (1s, 2s, 3s)
+                const waitTime = attempt * 1000
+                console.log(`⏳ [AUTH] Esperando ${waitTime}ms antes de reintentar...`)
+                await new Promise(resolve => setTimeout(resolve, waitTime))
+              }
+            }
+            return null
+          }
 
-        console.log("✅ [AUTH] Usuario encontrado:", { id: user.id, email: user.email, role: user.role })
+          let user
+          try {
+            user = await findUserWithRetry(credentials.email as string)
+          } catch (dbError) {
+            console.error("❌ [AUTH] Error de base de datos después de reintentos:", dbError)
+            return null
+          }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        )
+          if (!user || !user.password) {
+            console.error("❌ [AUTH] Usuario no encontrado:", credentials.email)
+            return null
+          }
 
-        if (!isPasswordValid) {
-          console.error("❌ [AUTH] Contraseña incorrecta para:", credentials.email)
-          throw new Error("Contraseña incorrecta")
-        }
+          console.log("✅ [AUTH] Usuario encontrado:", { id: user.id, email: user.email, role: user.role })
 
-        console.log("✅ [AUTH] Autenticación exitosa para:", user.email)
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          )
+
+          if (!isPasswordValid) {
+            console.error("❌ [AUTH] Contraseña incorrecta para:", credentials.email)
+            return null
+          }
+
+          console.log("✅ [AUTH] Autenticación exitosa para:", user.email)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+          }
+        } catch (error) {
+          console.error("❌ [AUTH] Error inesperado en authorize:", error)
+          return null
         }
       }
     })
@@ -137,5 +179,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return "/dashboard"
     }
   },
-  secret: process.env.NEXTAUTH_SECRET,
 })

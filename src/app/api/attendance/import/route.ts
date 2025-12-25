@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { AttendanceStatus } from "@/generated/prisma"
 import { canManageAttendance } from "@/lib/role-helpers"
-import * as XLSX from "xlsx"
+import * as ExcelJS from "exceljs"
 
 export async function POST(request: Request) {
   try {
@@ -34,13 +34,33 @@ export async function POST(request: Request) {
       )
     }
 
-    // Leer el archivo Excel
+    // Leer el archivo Excel con ExcelJS
     const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const workbook = XLSX.read(buffer, { type: "buffer" })
-    const sheetName = workbook.SheetNames[0]
-    const sheet = workbook.Sheets[sheetName]
-    const data = XLSX.utils.sheet_to_json(sheet)
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(bytes)
+    
+    // Obtener la primera hoja
+    const worksheet = workbook.worksheets[0]
+    
+    // Convertir a JSON similar a xlsx
+    const data: any[] = []
+    const headerRow = worksheet.getRow(1).values as any[]
+    const headers = headerRow.slice(1) // Remover el primer elemento undefined
+    
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return // Saltar header
+      
+      const rowData: any = {}
+      const values = row.values as any[]
+      
+      headers.forEach((header, index) => {
+        if (header) {
+          rowData[header] = values[index + 1]
+        }
+      })
+      
+      data.push(rowData)
+    })
 
     const results = {
       success: 0,

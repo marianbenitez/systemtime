@@ -35,7 +35,10 @@
       "Bash(unset:*)",
       "Bash(cat:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill -9)"
+      "Bash(xargs kill -9)",
+      "Bash(npm update:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

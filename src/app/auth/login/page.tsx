@@ -59,9 +59,15 @@ export default function LoginPage() {
       if (result?.error) {
         console.error("❌ [LOGIN] Error en signIn:", result.error)
         console.error("📝 [LOGIN] Tipo de error:", typeof result.error)
-        setError(result.error === "CredentialsSignin"
-          ? "Credenciales inválidas"
-          : result.error)
+        
+        // Manejar diferentes tipos de error
+        let errorMessage = "Error al iniciar sesión"
+        if (result.error === "CredentialsSignin") {
+          errorMessage = "Credenciales inválidas. Verifica tu email y contraseña."
+        } else if (result.error === "Configuration") {
+          errorMessage = "Error de configuración del servidor. Contacta al administrador."
+        }
+        setError(errorMessage)
       } else if (result?.ok) {
         console.log("✅ [LOGIN] Login exitoso!")
         console.log("🔄 [LOGIN] Estado del resultado:", {
