@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function LoginPage() {
   const router = useRouter()
-  const { data: session, status, update } = useSession()
+  const { data: session, status } = useSession()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -70,20 +70,23 @@ export default function LoginPage() {
         setError(errorMessage)
       } else if (result?.ok) {
         console.log("✅ [LOGIN] Login exitoso!")
-        console.log("🔄 [LOGIN] Estado del resultado:", {
-          ok: result.ok,
-          status: result.status,
-          url: result.url,
-          error: result.error
-        })
-        console.log("🚀 [LOGIN] Redirigiendo a /dashboard...")
+        console.log("🚀 [LOGIN] Verificando sesión antes de redirigir...")
 
-        // Forzar actualización de la sesión antes de navegar
-        await update()
+        // Verificar que la sesión se creó correctamente
+        const sessionCheck = await fetch('/api/auth/session')
+        const sessionData = await sessionCheck.json()
         
-        // Refrescar y navegar con el router de Next.js
-        router.refresh()
-        router.push("/dashboard")
+        console.log("📋 [LOGIN] Sesión verificada:", sessionData)
+        
+        if (sessionData?.user) {
+          console.log("✅ [LOGIN] Sesión confirmada, redirigiendo...")
+          window.location.replace("/dashboard")
+        } else {
+          console.log("⚠️ [LOGIN] Sesión no detectada, reintentando...")
+          // Esperar un momento y reintentar
+          await new Promise(resolve => setTimeout(resolve, 500))
+          window.location.replace("/dashboard")
+        }
       } else {
         console.error("⚠️ [LOGIN] Resultado inesperado:", result)
         setError("Error desconocido al iniciar sesión")
