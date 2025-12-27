@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function LoginPage() {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -78,11 +78,12 @@ export default function LoginPage() {
         })
         console.log("🚀 [LOGIN] Redirigiendo a /dashboard...")
 
-        // Pequeño delay para asegurar que la sesión se actualizó
-        await new Promise(resolve => setTimeout(resolve, 100))
-
-        // Usar window.location para asegurar limpieza completa del estado
-        window.location.href = "/dashboard"
+        // Forzar actualización de la sesión antes de navegar
+        await update()
+        
+        // Refrescar y navegar con el router de Next.js
+        router.refresh()
+        router.push("/dashboard")
       } else {
         console.error("⚠️ [LOGIN] Resultado inesperado:", result)
         setError("Error desconocido al iniciar sesión")
