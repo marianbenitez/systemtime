@@ -40,8 +40,7 @@ export default function LoginPage() {
       hostname: window.location.hostname,
       href: window.location.href,
       origin: window.location.origin,
-      isProduction: process.env.NODE_ENV === 'production',
-      nextAuthUrl: process.env.NEXTAUTH_URL || 'NOT SET'
+      isProduction: process.env.NODE_ENV === 'production'
     })
 
     try {

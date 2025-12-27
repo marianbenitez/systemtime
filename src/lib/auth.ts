@@ -22,6 +22,12 @@ if (!process.env.AUTH_SECRET && process.env.NEXTAUTH_SECRET) {
   process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET
 }
 
+// Configurar AUTH_URL si NEXTAUTH_URL está disponible (para compatibilidad)
+// NextAuth v5 usa AUTH_URL, pero también acepta NEXTAUTH_URL
+if (process.env.NEXTAUTH_URL && !process.env.AUTH_URL) {
+  process.env.AUTH_URL = process.env.NEXTAUTH_URL
+}
+
 declare module "next-auth" {
   interface Session {
     user: {
